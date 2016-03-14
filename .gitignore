@@ -7,6 +7,9 @@ __pycache__/
 Stats
 TempFiles
 
+# another file to ignore
+/TempFiles/tempo.txt
+
 # SublimeText's own files
 *.sublime-project
 *.sublime-workspace
