@@ -175,7 +175,11 @@ class ReadPoem:
                                  random.uniform(0.1,0.5), 
                                  mul = 0.9)
         self.c23 = self.c2 + self.c3
-        self.c4 = Freeverb(self.c23, .5, mul = 0.9, bal = 0.3).out()
+        self.c4 = Freeverb(self.c23, .5, mul = 0.8, bal = 0.3).out()
+        self.done = self.clean()
+
+    def cleanUp(self):
+        self.clean = TrigFunc(self.c1['trig'], self.poem1.clean)
 
 def midiCcDetectOn():
     midiMet.play()

@@ -10,6 +10,7 @@
 import constants as cons
 import variables as vari
 import os, random, fnmatch
+import Trigs
 from pyo import *
 
 
@@ -61,46 +62,27 @@ class SoundRead:
             speed = random.uniform(-2*modu,2*modu)
             while speed > -0.1 and speed < 0.1:
                 speed = random.uniform(-2*modu,2*modu)
-        print "A"
         self.path = path
-        print "B"
         self.fileSel = fileSel
-        print "C"
         self.speed = speed
-        print "D"
         if mode == 0:
-            print "1"
             # rSound = RandListDir().doIt(path)
             rSound = RandListDir().doItDeep(path)
             sFile = os.path.join(path,rSound)
             self.sf = SfPlayer(sFile, speed)
-            print "2"
-
         elif mode == 1:
-            print "3"
-            # sFile = os.path.join(path,fileSel)
-            # self.table = SndTable(self.fileSel)
-            # self.freq = self.table.getRate()
-            # self.sf = Osc(self.table,self.freq)
-            self.sf = SfPlayer(self.fileSel, self.speed)  ## Turned off for testing
-            print "4"
+            self.sf = SfPlayer(self.fileSel, self.speed)
 
     def stop(self):
         self.sf.stop()
         return self
 
     def getOut(self):
-        print "A"
         self.sf.play()
-        # self.sf.out()
-        print "B"
         return self.sf
-        print "C"
 
     def out(self):
-        # self.sf.play()
         self.sf.out()
-        pass
 
     def chooseNew(self, speed = None):
         if speed == None:
@@ -121,6 +103,7 @@ class GranuleSf:
     Mode 1 is a specific sound, needs to be specified with fileSel.
     """
     def __init__(self, mode = 0, path=cons.SFFOLDER_PATH, fileSel=cons.SONTEST, modu=1, dur=1):
+        print "sample"
         self.t = SndTable()
         self.path = path
         self.fileSel = fileSel

@@ -21,13 +21,16 @@ class Sfxs:
     If mode = 1, the effects can be chosen manually. (TODO)
     modu is the amount of effect applied.  Min is 0, max is 1.
     numFXs is the number of effects applied.  Min is 1, max is 7.
+    rvb = 1 applies a reverb at the very end of the chain.
     """
 
-    def __init__(self,inSig, mode=0, numOuts = cons.NUMOUTS, modu=1, numFXs=2, mult = 1):
+    def __init__(self,inSig, mode=0, numOuts = cons.NUMOUTS, modu=1, numFXs=2, mult = 1, rvb = 0):
         self.sig = inSig
         self.mult = mult*0.6
         self.numFXs = numFXs
         self.amp = None
+        self.rvb = rvb
+        self.fxSig = []  # to add the fx signals for output
 
         ###To prevent out of range assignation
         if modu > 1:
@@ -113,25 +116,25 @@ class Sfxs:
         for i in range(numFXs):
             if newFXs[i] == 0:
                 print "disto on"
-                self.distor(modu)
+                self.fxSig.append(self.distor(modu))
             if newFXs[i] == 1:
                 print "harmon on"
-                self.harmon(modu)
+                self.fxSig.append(self.harmon(modu))
             if newFXs[i] == 2:
                 print "filter on"
-                self.filter(modu)
+                self.fxSig.append(self.filter(modu))
             if newFXs[i] == 3:
                 print "chorus on"
-                self.chorus(modu)
+                self.fxSig.append(self.chorus(modu))
             if newFXs[i] == 4:
                 print "panning on"
-                self.panning(modu)
+                self.fxSig.append(self.panning(modu))
             if newFXs[i] == 5:
                 print "delay on"
-                self.delay(modu)
+                self.fxSig.append(self.delay(modu))
             if newFXs[i] == 6:
                 print "phaser on"
-                self.phaser(modu)
+                self.fxSig.append(self.phaser(modu))
             ###Reverb maybe should not be used here 
             ###    as tail will be cut prob most of the time.
             # if newFXs[i] == 7:
@@ -148,15 +151,18 @@ class Sfxs:
         else:
             lfoFreq = random.uniform(0.1,10*intense)
         driv = LFO(lfoFreq, type=random.randint(0,6), mul=0.5, add=0.5)
-        self.sig = Disto(self.sig, driv*intense, random.random(), mul=0.75*mult)
-        self.sig = self.sig.mix(cons.NUMOUTS)
-        # self.sig = Compress(self.sig,-12,5)
-        return self.sig
+        self.sig2 = Disto(self.sig, driv*intense, random.random(), mul=0.75*mult)
+        self.sig3 = self.sig2.mix(cons.NUMOUTS)
+        return self.sig3
 
     def harmon(self, intense=1, mult = 1):
         tranList = [0,7,12,-5,-12,24,-24]
         randRange = cons.NUMOUTS+random.randint(0,6)
-        amp = 0.93 ** randRange + .1
+        # following if to avoid clipping if randRange == 1 (hopefully)
+        if randRange == 1:
+            amp = 0.93 ** randRange
+        else:
+            amp = 0.93 ** randRange + .1
         coin1 = random.randint(0,1)
         if coin1 == 0:
             tran = [random.choice(tranList) for i in range(randRange)]
@@ -170,11 +176,11 @@ class Sfxs:
         vibInt = random.random()
         vib = LFO(lfoFreq, type=random.randint(0,6), mul=1*vibInt)
         self.sigTran = Harmonizer(self.sig,tran+vib, mul=0.9*amp*mult)
-        intenseDry = random.triangular(0,1,0.5)
-        self.sig = [self.sig[i] * intenseDry for i in range(len(self.sig))] + self.sigTran * intense
-        self.sig = self.sig.mix(cons.NUMOUTS)
+        intenseDry = random.triangular(0,.9,0.5)
+        self.sig2 = [self.sig[i] * intenseDry for i in range(len(self.sig))] + self.sigTran * intense
+        self.sig3 = self.sig2.mix(cons.NUMOUTS)
         # self.sig = Compress(self.sig,-12,5)
-        return self.sig
+        return self.sig3
 
     def filter(self, intense=1, mult = 1):
         coin1 = random.randint(0,100)
@@ -206,11 +212,11 @@ class Sfxs:
         lfoAdd = random.triangular(lfoAddMin,lfoAddMax,lfoAddN)
         lfoMul = random.uniform(10,lfoAdd/1.5)
         freq = LFO(lfoFreq, type=random.randint(0,6), mul=lfoMul,add=lfoAdd)
-        q = random.triangular(0.5,20,2)
-        self.sig = Biquad(self.sig, freq, q, fType, mul = mult)
-        self.sig = self.sig.mix(cons.NUMOUTS)
+        q = random.triangular(0.5,10,2)
+        self.sig2 = Biquad(self.sig, freq, q, fType, mul = mult)
+        self.sig3 = self.sig2.mix(cons.NUMOUTS)
         # self.sig = Compress(self.sig,-12,5)
-        return self.sig
+        return self.sig3
 
     def chorus(self, intense=1, mult = 1):
         coin1 = random.randint(0,1)
@@ -219,8 +225,8 @@ class Sfxs:
         else: 
             lfoDepFreq = random.uniform(0.1,10*intense)
         dep = LFO(lfoDepFreq, type=random.randint(0,6), mul=2.5, add=2.5)
-        dep = dep*random.random()
-        feed = random.triangular(0,1,0.03)
+        dep2 = dep*random.random()
+        feed = random.triangular(0,0.7,0.03)
         coin2 = random.randint(0,1)
         if len(self.sig) > 1 or coin2 == 0:
             lfoBalFreq = [random.uniform(0.1,10*intense) for i in range(cons.NUMOUTS)]
@@ -228,8 +234,8 @@ class Sfxs:
             lfoBalFreq = random.uniform(0.1,10*intense)
         bal = LFO(lfoDepFreq, type=random.randint(0,6), mul=.5, add=.5)
         bal = bal*random.random()
-        self.sig = Chorus(self.sig, dep*intense, feed*intense, bal, mul=mult)
-        return self.sig
+        self.sig2 = Chorus(self.sig, dep2*intense, feed*intense, bal, mul=mult)
+        return self.sig2
 
     def panning(self, intense=1, mult = 1):
         coin = random.randint(0,1)
@@ -243,12 +249,12 @@ class Sfxs:
         # amp = Osc(table=ampTable, freq=freq, mul=.8)
         if len(self.sig) == 2:
             spread = 0
-            self.sig = Pan(self.sig, cons.NUMOUTS, pan, spread) #, mul=amp)
+            self.sig2 = Pan(self.sig, cons.NUMOUTS, pan, spread) #, mul=amp)
         else:
             spread = random.uniform(0.,0.7)
-            self.sig = Pan(self.sig, cons.NUMOUTS, pan, spread)
-        self.sig = self.sig.mix(cons.NUMOUTS)   
-        return self.sig
+            self.sig2 = Pan(self.sig, cons.NUMOUTS, pan, spread)
+        self.sig3 = self.sig2.mix(cons.NUMOUTS)   
+        return self.sig3
 
     def delay(self, intense=1, mult = 1):
         coin1 = random.randint(0,1)
@@ -265,10 +271,10 @@ class Sfxs:
         else:
             delay = random.uniform(0.005,0.5)
         feed = random.triangular(0.1,0.6,0.3)
-        self.sig = Delay(self.sig, delay*intense, feed*intense, mul=0.7)
-        self.sig = self.sig.mix(cons.NUMOUTS)
+        self.sig2 = Delay(self.sig, delay*intense, feed*intense, mul=0.7)
+        self.sig3 = self.sig2.mix(cons.NUMOUTS)
         # self.sig = Compress(self.sig,-20,2)
-        return self.sig
+        return self.sig3
 
     def phaser(self, intense=1, mult = 1):
 
@@ -288,14 +294,13 @@ class Sfxs:
         else:
             lfoSpread = random.uniform(0.1,5*intense)
         spread = LFO(lfoSpread, type=random.randint(0,6), mul=lfoSpMul,add=lfoSpAdd)
-        q = random.uniform(1,40)
-        feed = random.uniform(0.1,0.85)
+        q = random.uniform(1,20)
+        feed = random.uniform(0.1,0.8)
         num = int(random.randint(1,30)*intense)+1
 
-        self.sig = Phaser(self.sig, freq, spread, q, feed, num, mul=0.7*mult)
-        self.sig = self.sig.mix(cons.NUMOUTS)
-        # self.sig = Compress(self.sig,-15,40)
-        return self.sig
+        self.sig2 = Phaser(self.sig, freq, spread, q, feed, num, mul=0.7*mult)
+        self.sig3 = self.sig2.mix(cons.NUMOUTS)
+        return self.sig3
 
     def reverb(self, intense=1, mult = 1):
         size = random.uniform(0.1,0.9)
@@ -304,17 +309,19 @@ class Sfxs:
             size = [size+random.uniform(-0.05,0.05) for i in range(cons.NUMOUTS)]
         damp = random.random()
         bal = random.triangular(0.1,1,0.3)*intense
-        self.sig = Freeverb(self.sig, size, damp, bal, mul = mult)
-        self.sig = self.sig.mix(cons.NUMOUTS)
-        # self.sig = Compress(self.sig,-20,2)
-        return self.sig
+        self.sig2 = Freeverb(self.sig, size, damp, bal, mul = mult)
+        self.sig3 = self.sig2.mix(cons.NUMOUTS)
+        return self.sig3
 
     def out(self):
         print "Number of output channels: ", len(self.sig)
-        self.sig = Mix(self.sig, cons.NUMOUTS)
-        self.sigC = Compress(self.sig,-20,10,mul=self.mainEnvGo) # Where the main amp env is applied
-        # self.sig = self.sigC*self.amp
-        self.sigC.out()
+        self.sigA = Mix(self.fxSig, cons.NUMOUTS)
+        if self.rvb == 0:
+            self.sigB = Freeverb(self.sigA,bal = 0)
+        else:
+            self.sigB = Freeverb(self.sigA, random.choice([.02,.1,.3,.5,.8]))
+        self.sigC = Compress(self.sigB,-20,10,mul=self.mainEnvGo) # Where the main amp env is applied
+        self.sigD = Clip(self.sigC).out()
 
     def getDur(self, amp=1, tTime=1):
         return (1/self.mainEnvDur)

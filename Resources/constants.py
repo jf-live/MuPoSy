@@ -14,7 +14,7 @@ NUMOUTS = 2
 #### How many SynthGen streams to create
 NUMGENS = 1
 
-NUMSAMPS = 1
+NUMSAMPS = 2
 
 
 #### Path to the 'Resources' folder
@@ -23,6 +23,16 @@ MAIN_PATH = os.getcwd()
 STATS_PATH = os.path.join(MAIN_PATH, 'Stats')
 TEMP_PATH = os.path.join(RESOURCE_PATH,'TempFiles')
 
+### For init, tests if path exists, if not creates it
+if os.path.isdir(STATS_PATH) is True:
+	print "Stats folder is go"
+else:
+	os.makedirs(STATS_PATH)
+
+if os.path.isdir(TEMP_PATH) is True:
+	print "Temp folder is go"
+else:
+	os.makedirs(TEMP_PATH)
 
 
 #### List of poetry txt files available for Tts

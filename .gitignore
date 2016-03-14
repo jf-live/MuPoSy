@@ -3,9 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Stats folder to be ignored
-"Stats"
-"TempFiles"
+# Stats and Temp folders to be ignored
+Stats
+TempFiles
 
 # SublimeText's own files
 *.sublime-project

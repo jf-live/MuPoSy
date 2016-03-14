@@ -46,7 +46,23 @@ class MidiCCIn():
 		elif val >= 60:
 			# print "MAX POWER!"
 			vari.currentCC0Val = val
-			
+
+
+class OSCIn():
+	def __init__(self):
+		self.rec = OscReceive(port=10001, address = ['/depth'])
+
+	def getSig(self):
+		return self.rec['/depth']
+
+	def getVal(self):
+		return self.rec.get(identifier = '/depth')
+
+
+########################## IN TESTING START
+# a = OSCIn()
+# b = Sine(a.getVal(), mul=0.4).out()
+########################## IN TESTING END	
 
 # a = MidiCCIn()
 

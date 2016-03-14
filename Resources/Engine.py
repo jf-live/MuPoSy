@@ -36,32 +36,34 @@ met = util.genMet.setTime(2)
 notes = algo.Notes(key='D')
 
 
+gen = None
 
 def callGen():
 	global patGens1
 	global patGens2
 	gen = [algo.AlgoGen(noteDur=vari.mainTempo) for i in range(cons.NUMGENS)]
-	genCall = [gen[i].doinIt() for i in range(cons.NUMGENS)]
+	# genCall = [gen[i].doinIt() for i in range(cons.NUMGENS)]
 	# a2 = [algo.AlgoGen(noteDur=vari.mainTempo/2) for i in range(cons.NUMGENS)]
 	# a3 = [a2[i].doinIt() for i in range(cons.NUMGENS)]
-
 	# change the time for the next calls here
 	patGens1.time = random.randint(20,50)
 	# patGens2.time = random.randint(20,50)
 
 
+samp=None
 
 def callSamp():
 	global patSamp1
 	global patSamp2
+	global samp
 	samp = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]
 	# sampCall = [samp[i].doinIt() for i in range(cons.NUMSAMPS)]
 	# a2 = [algo.AlgoGen(noteDur=vari.mainTempo/2) for i in range(cons.NUMGENS)]
 	# a3 = [a2[i].doinIt() for i in range(cons.NUMGENS)]
 
 	# change the time for the next calls here
-	patSamp1.time = random.randint(10,20)
-	patSamp2.time = random.randint(10,20)
+	patSamp1.time = random.randint(5,15)
+	# patSamp2.time = random.randint(10,20)
 
 
 def chNotes():
@@ -74,7 +76,7 @@ def chNotes():
 patNotes = Pattern(chNotes, 10).play()
 patGens1 = Pattern(callGen, 20).play()
 # patGens2 = Pattern(callGen, 20).play()
-# patSamp1 = Pattern(callSamp, 10).play()
+patSamp1 = Pattern(callSamp, 10).play()
 # patSamp2 = Pattern(callSamp, 10).play()
 
 

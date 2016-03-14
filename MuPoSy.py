@@ -26,23 +26,15 @@
 #
 # To add text to the data file of the current run, use util.dataF.write(str).
 #
-# IMPORTANT : This script must be run on Mac OS in order to work, as the Text-
-#			  To-Speach engine uses the built in "say" terminal command.
-#			  To run this script on a different platform, disable the poetry
-#			  portion (3rd section in the demo below.
+# IMPORTANT : This script must be run on Mac OS or Linux in order to work.
 #
 ###############################################################################
-###  active when the variables are created in Resources.variables 
-### HOWEVER, because multiple instances of similar effects would all have the 
-###  same variables, this project is put on the ice until a suitable solution
-###  is found.  The intent was to be able to easily recall variables for
-###  algorithmic evaluation and decision making.
 ### Seeding is still useful to recall 'presets'.
 
 
 from pyo import *
 # Server booted here because it is needed when the resources are loaded
-s = Server(sr = 48000, buffersize = 1024)
+s = Server(sr = 48000) #, buffersize = 1024)
 print pm_list_devices()
 # nanoKontrol is connected here.  See Midi.py for details.
 s.setMidiInputDevice(0)

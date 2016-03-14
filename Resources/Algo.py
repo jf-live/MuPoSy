@@ -18,6 +18,7 @@ import Voix as voix
 import SynthGen as synt
 import SamplePlay as samp
 import Effects as effe
+import Trigs
 import random, threading, time
 
 
@@ -52,10 +53,10 @@ class AlgoGen:
         print "modulation a: ", modulA
         self.a2 = effe.Sfxs(self.a1,modu=modulA, numFXs=sfxNum, mult=0.8)
         print self.a2.getDur()
-        self.tDown = threading.Thread(target=self.volDown).start()
+        # self.tDown = threading.Thread(target=self.volDown).start()
 
 
-    def volDown(self):
+    def volDown(self):   # Not in use
         time.sleep(self.a2.getDur()+2)
         self.ending()
 
@@ -79,8 +80,6 @@ class AlgoGen:
             self.trigA2 = TrigFunc(util.genMet, self.retriggin)
         else:
             #For a minimum of variation, selects new random pitch every few seconds.
-            print "self.a",self.a
-            print "self.a",self.a[0]
             self.trigA0 = TrigFunc(util.genMet, self.a[0].testing)
             self.trigA1 = TrigFunc(util.genMet, self.a[0].setNewNote)
             # self.trigA1 = TrigFunc(util.genMet, [self.a[i].setNewNote() for i in range(self.synthNum)])
@@ -120,27 +119,33 @@ class AlgoSamp:
         '''
 
         # Generates sound from a granulated audio file
-        self.b = [samp.GranuleSf() for i in range(4)]
-        self.b1 = [self.b[i].getOutInit() for i in range(4)]
+        self.b = samp.GranuleSf()
+        # self.b1 = self.b.getOutInit()
+        self.b1 = self.b.getOut()
 
         modulB = random.random()/10
         print "modulation b: ", modulB
-        self.b2 = effe.Sfxs(self.b1[i],modu=modulB, numFXs=random.randint(1,4))
+        self.b2 = effe.Sfxs(self.b1,modu=modulB, numFXs=random.randint(1,4), rvb=1)
         # Get the duration of the main env
         self.bTime = self.b2.getDur()
         self.patTime = random.randint(1,4)
         # Change the samples in the order they were called to prevent calling before
         # playback is done.
-        self.chSamp = 0
-        self.tDown = threading.Thread(target=self.volDown).start()
+        # self.tDown = threading.Thread(target=self.volDown).start()
 
-        self.tFreq = Randi(0.5,3,10)
-        # trig = Cloud(tFreq).play()
-        self.trig = Beat(1).play()
+        coin = 0#random.random()
+        randFreq = random.randint(3,20)
+        if coin >0.5:
+            self.tFreq = Randi(0.1,2,randFreq)
+            self.trig = Cloud(self.tFreq).play()
+        else:
+            self.tFreq = Randh(1,3,randFreq)
+            self.trig = Beat(self.tFreq).play()
+            self.patB2 = Pattern(self.beatFill, time=self.patTime).play()
+
         self.patB1 = TrigFunc(self.trig,self.repChoice)
-        self.patB2 = Pattern(self.beatFill, time=self.patTime).play()
 
-    def volDown(self):
+    def volDown(self):   # not in use
         time.sleep(self.bTime+2)
         self.ending()
 
@@ -149,17 +154,19 @@ class AlgoSamp:
         del self.b,self.b1,self.b2,self.tDown, self.tFreq, self.trig, self.patB1, self.patB2
 
     def repChoice(self):
-        self.b[self.chSamp].mul = SigTo(0,0.05)
-        self.b[self.chSamp].chooseNew()
-        self.b1[self.chSamp] = self.b[self.chSamp].getOutRand(random.uniform(0.001,2))
+        self.b.mul = SigTo(0,0.05)
+        self.space()
+        self.b.chooseNew()
+        self.b1 = self.b.getOutRand(random.uniform(0.001,2))
         # patB1.time = random.triangular(0.01,10,1)
-        self.chSamp += 1
-        if self.chSamp == 4:
-            self.chSamp = 0
 
     def beatFill(self):
+        print "hey"
         self.trig
         self.trig.fill()
+
+    def space(self):
+        self.b2.sigB.size = random.choice([.02,.1,.3,.5,.8])
 
 
 
