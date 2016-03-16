@@ -16,10 +16,11 @@ pendant quelques secondes.  Résoudre ce problème est une priorité pour la
 prochaine mise-à-jour.**
 
 
-Comment ça marche
------------------
+Comment ça marche:
+------------------
 
-Un fader ou potentiomètre assigné au MIDI CC 0 sert à simuler une installation.
+Un fader ou potentiomètre assigné au MIDI CC 0 sert à simuler une situation 
+d'installation sonore légèrement interactive.
 Lorsque la valeur CC envoyée est de 0, c'est comme si il n'y a personne dans
 l'espace.  Plus la valeur augmente, simulant qu'une personne approche, plus le
 son passe au second plan.  _Pour une bonne simulation, il faut glisser le fader
