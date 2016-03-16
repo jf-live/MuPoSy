@@ -28,13 +28,16 @@
 #
 # IMPORTANT : This script must be run on Mac OS or Linux in order to work.
 #
+# The "translate" function in utilities was taken from Adam Luchjenbroers on 
+# 	http://stackoverflow.com/questions/1969240/mapping-a-range-of-values-to-another
+#
 ###############################################################################
 ### Seeding is still useful to recall 'presets'.
 
 
 from pyo import *
 # Server booted here because it is needed when the resources are loaded
-s = Server(sr = 48000) #, buffersize = 1024)
+s = Server(sr = 48000) #, buffersize = 512)
 print pm_list_devices()
 # nanoKontrol is connected here.  See Midi.py for details.
 s.setMidiInputDevice(0)
@@ -69,4 +72,3 @@ print cons.MAIN_PATH
 
 
 s.gui(locals())
-

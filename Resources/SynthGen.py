@@ -27,9 +27,9 @@ class SynthGen:
         self.multMod = multMod  
         self.envDur = envDur    #envelope duration
         self.wide = wide    #If gen is all channels or 1 channel
-        self.randChooser = 2#int(random.triangular(0,13, random.randint(0,13)))
+        self.randChooser = int(random.triangular(0,13, random.randint(0,13)))
         # self.randChooser = 13
-        print self.randChooser
+        print "wave", self.randChooser
         #0@5: LFO Saw Up, SawDown, Square, Triangle, Pulse, Bipolar Pulse
         #6: BLIT
         #7: RCOsc
@@ -44,7 +44,7 @@ class SynthGen:
         #   interesting shapes, etc.
         
         if vari.randEnvSynth >= 35:
-            if self.envDur<3:
+            if self.envDur < 3:
                 self.attackT = random.random()/3
                 self.decayT = random.uniform(0.01,0.5)/3
                 self.releaseT = random.random()/3
@@ -243,6 +243,10 @@ class SynthGen:
                                self.modifOscLoopSig, 
                                mult*self.modifMult*self.env)
 
+        self.sigForOut = Clip(self.sig)
+
+        self.patMul = Pattern(self.settingMul,0.05)
+
     def repeat(self):
         '''
         Retrigs the envelope.
@@ -285,21 +289,9 @@ class SynthGen:
         self.env.play()
 
     def getOut(self):
-        return self.sig.mix(cons.NUMOUTS)
-
-    def out(self, outs=1, whatOut=0):
-        self.sigOut = self.sig.mix(outs).out(whatOut)
-
-    def getFreq(self):
-        print self.freq
-
-    def testing(self):
-        print "testing"
-
-
-    def getRandChooser(self):
-        #prints the list of gen choices
-        print self.randChooser
+        self.forGetOut1 = self.sigForOut.mix(cons.NUMOUTS)
+        self.forGetOut2 = Compress(self.forGetOut1,-10,5)
+        return self.forGetOut2
 
     def setNewNote(self):
         print 'new note'
@@ -309,7 +301,6 @@ class SynthGen:
             self.sig.setCarrier(freq)
         else:
             self.sig.setFreq(freq)
-        print "test done"
 
     def setNewFreq(self,newFreq):
         freq = newFreq
@@ -317,7 +308,6 @@ class SynthGen:
             self.sig.setCarrier(freq)
         else:
             self.sig.setFreq(freq)
-
 
     def setRandom(self, mini=200, maxi=3000):
         if self.randChooser > 8 and self.randChooser <= 10:
@@ -327,6 +317,40 @@ class SynthGen:
 
     def stop(self):
         self.sig.stop()
+
+    def settingMul(self):
+        self.sigForOut.mul = vari.sineGenMul
+
+
+
+
+# to be played when the text is spoken
+class SineGen:
+    def __init__(self):
+
+        self.a = Sine(4000, mul=0.05)
+        self.b = Pan(self.a, pan = 0.5, mul=0)
+        self.c1 = Delay(self.b, random.uniform(0.1,0.3), random.uniform(0.2,0.6))
+        self.c2 = sum([self.b + self.c1])
+        self.d = Freeverb(self.c2, 0.8, bal=0.7).out()
+        self.patFreq = Pattern(self.newFreq, vari.sineTempo).play()
+        self.patMul = Pattern(self.settings,0.05).play()
+
+    def newFreq(self):
+        self.a.freq = random.randint(3000,16000)
+        self.b.pan = random.random()
+
+    def settings(self):
+        self.b.mul = vari.sineGenMul
+        self.patFreq.time = vari.sineTempo
+
+
+
+
+
+
+
+
 
 #--------------------------------------------------------------------START-OLD
 

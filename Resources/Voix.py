@@ -168,7 +168,7 @@ class ReadPoem:
     def playVoice(self):
         self.c = samp.SoundRead(1, speed=1, fileSel = vari.poemPath)
         self.c1 = self.c.getOut()
-        self.c2 = Biquad(self.c1, 800,type=1, mul=1.5).out()
+        self.c2 = Biquad(self.c1, 800,type=1, mul=1.).out()
         self.time = random.uniform(0.03,0.2)
         self.randTime = [random.uniform(0.9,1.1)*self.time for i in range(2)]
         self.c3 = Delay(self.c2, self.randTime, 
@@ -176,7 +176,7 @@ class ReadPoem:
                                  mul = 0.9)
         self.c23 = self.c2 + self.c3
         self.c4 = Freeverb(self.c23, .5, mul = 0.8, bal = 0.3).out()
-        self.done = self.clean()
+        self.done = self.cleanUp()
 
     def cleanUp(self):
         self.clean = TrigFunc(self.c1['trig'], self.poem1.clean)
@@ -186,7 +186,7 @@ def midiCcDetectOn():
 
 def ccValReset():
     # time.sleep(15)
-    vari.currentCC0Val = 0
+    vari.currentCCVoix = 0
     midiMet.play()
 
 # For CallAfter-ing, to prevent the instances from being garbaged after the
@@ -198,11 +198,13 @@ def playing(delay):
     global callerSnd
     global callerReset
     global po
-    if vari.currentCC0Val >= 60:
+    # print "Voix"
+    # print "vari",vari.currentCCVoix
+    if vari.currentCCVoix > 110:
         midiMet.stop()
         po = ReadPoem(delay)
         callerSnd = CallAfter(po.playVoice, time=2)
-        callerReset = CallAfter(ccValReset, time=2)
+        callerReset = CallAfter(ccValReset, time=30)
 
 signalIn = inte.MidiCCIn()
 
@@ -210,7 +212,7 @@ signalIn = inte.MidiCCIn()
 ttsDel = 2
 
 # Triggers the Tts if MIDI CC 0 returns >100
-midiMet = util.eventMet
+midiMet = util.eventMetVoix
 tr = TrigFunc(midiMet, signalIn.retVal)
 tr2 = TrigFunc(midiMet, playing, ttsDel)
 

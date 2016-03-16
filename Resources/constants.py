@@ -11,10 +11,10 @@ import os
 #### How many outputs to use
 NUMOUTS = 2
 
-#### How many SynthGen streams to create
-NUMGENS = 1
+#### How many SynthGen and Samples streams to create
+NUMGENS = 2
 
-NUMSAMPS = 2
+NUMSAMPS = 1
 
 
 #### Path to the 'Resources' folder
@@ -46,9 +46,9 @@ SONTEST = os.path.join(SFFOLDER_PATH, "Scratch tete.wav")
 
 
 
-SCALES = {'Power':[0,7]}#,'M':[0,2,4,5,7,9,11], 'm':[0,2,3,5,7,8,11], 'Whole':[0,2,4,6,8,10],
-			# 'Half':[0,1,2,3,4,5,6,7,8,9,10,11], 'Tri_M':[0,4,7],
-			# 'Tri_m':[0,3,7], 'Quad_M7':[0,4,7,10],'Quad_m7':[0,3,7,10]}
+SCALES = {'Power':[0,7],'M':[0,2,4,5,7,9,11], 'm':[0,2,3,5,7,8,11], 'Whole':[0,2,4,6,8,10],
+			'Half':[0,1,2,3,4,5,6,7,8,9,10,11], 'Tri_M':[0,4,7],
+			'Tri_m':[0,3,7], 'Quad_M7':[0,4,7,10],'Quad_m7':[0,3,7,10]}
 
 KEYS = {'C':0, 'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'F':5,'F#':6,'G':7,
 		'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11}

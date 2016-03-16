@@ -10,7 +10,6 @@
 import constants as cons
 import variables as vari
 import os, random, fnmatch
-import Trigs
 from pyo import *
 
 
@@ -125,8 +124,9 @@ class GranuleSf:
         ### Pour obtenir le sampling rate
         sr = grEnv.getServer().getSamplingRate()
 
+        end = self.t.getSize()
         # end = self.t.getSize() - s.getSamplingRate() * 0.2
-        end = self.t.getSize() - 48000 * 0.2  #version simplifiée (voir ligne précédente), à revoir...
+        # end = self.t.getSize() - 48000 * 0.2  #version simplifiée (voir ligne précédente), à revoir...
 
         self.setEnv()
 
@@ -136,13 +136,15 @@ class GranuleSf:
             self.pos = Xnoise(freq=10, mul=end)
             dns = Randi(min=20, max=30, freq=3)
             pit = Randi(min=0.59, max=2.01, freq=100)#+RandInt(20,1)
-            self.gr = Granule(self.t, grEnv, dens=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.8)
+            self.gr = Granule(self.t, grEnv, dens=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
 
         else:
             self.pos = Phasor(self.t.getRate()*random.uniform(0.01,0.5), 0, self.t.getSize())
             dns = random.randint(10, 30)
             pit = Randi(min=0.59, max=2.01, freq=3)#+RandInt(20,1)
-            self.gr = Granulator(self.t, grEnv, grains=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.8)
+            self.gr = Granulator(self.t, grEnv, grains=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
+
+        self.gr2 = Compress(self.gr, -30,300,10, mul = 0.6)
 
     def setEnv(self):  #sets initial attributes for Adsr env
         self.att = random.uniform(0.01,1)
@@ -208,12 +210,12 @@ class GranuleSf:
         outSig = None
         if stereo == 0:
             #goes to 1 speaker
-            outSig = SPan(self.gr, random.randint(0,cons.NUMOUTS)/cons.NUMOUTS)
+            outSig = SPan(self.gr2, random.randint(0,cons.NUMOUTS)/cons.NUMOUTS)
         elif stereo == 1:
             #lfo between speakers
             a = LFO(freq=freq,type=3,mul=.5, add=.5)
             # b = SigTo(a, random.uniform(0.01,1))
-            outSig = SPan(self.gr, cons.NUMOUTS, a)
+            outSig = SPan(self.gr2, cons.NUMOUTS, a)
         self.noteEnv.play()
         return outSig
 
@@ -223,19 +225,19 @@ class GranuleSf:
         outSig = None
         if stereo == 0:
             #goes to 1 speaker
-            outSig = SPan(self.gr, random.randint(0,cons.NUMOUTS)/cons.NUMOUTS)
+            outSig = SPan(self.gr2, random.randint(0,cons.NUMOUTS)/cons.NUMOUTS)
         elif stereo == 1:
             #lfo between speakers
             a = LFO(freq=freq,type=3,mul=.5, add=.5)
             # b = SigTo(a, random.uniform(0.01,1))
-            outSig = SPan(self.gr, cons.NUMOUTS, a)
+            outSig = SPan(self.gr2, cons.NUMOUTS, a)
         return outSig
 
 
     def out(self, stereo=1, freq=1):
         if stereo == 0:
             #goes to 1 speaker
-            self.gr.out(random.randint(0,cons.NUMOUTS)/cons.NUMOUTS)
+            self.gr2.out(random.randint(0,cons.NUMOUTS)/cons.NUMOUTS)
             self.noteEnv.play()
         elif stereo == 1:
             #lfo between speakers
@@ -247,19 +249,21 @@ class GranuleSf:
         
     def outRand(self): #outputs sound with a new env different than initial
         self.resetEnv()
-        self.gr.out()
+        self.gr2.out()
 
     def getOutRand(self, lfoFreq = 1): #outputs sound with a new env different than initial
         self.resetEnv()
-        a = self.getOut(lfoFreq)
-        return a
+        self.a = self.getOut(lfoFreq)
+        return self.a
 
     def chooseNew(self):
         # rSound = RandListDir().doIt(self.path)
+        self.gr2.mul = 0
         rSound = RandListDir().doItDeep(self.path)
         sFile = os.path.join(self.path,rSound)
         vari.sampColl.append(sFile)
         self.t.setSound(sFile)
+        self.gr2.mul = self.noteEnv*0.8
 
 # a = GranuleSf()
 

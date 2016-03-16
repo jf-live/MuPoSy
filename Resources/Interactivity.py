@@ -25,27 +25,27 @@ import variables as vari
 # s.setMidiInputDevice(0)
 # s.boot()
 
-
+# to get CC for voice, independant as voice stops this when playing
 class MidiCCIn():
 	def __init__(self):
-
-		self.ctl = Midictl(ctlnumber=0, minscale=0, maxscale=100)
+		self.ctl = Midictl(ctlnumber=0, minscale=0, maxscale=127)
 		self.p = Port(self.ctl, .02)
 
+	def retVal(self):
+		updateVal = self.ctl.get()
+		vari.currentCCVoix = updateVal
+
+# to get CC for everything else
+class MidiCCInSnd():
+	def __init__(self):
+		self.ctl = Midictl(ctlnumber=0, minscale=0, maxscale=127)
+		self.p = Port(self.ctl, .02)
 
 	def retVal(self):
-		val = self.ctl.get()
-		if val < 20:
-			# print "wow"
-			vari.currentCC0Val = val
+		updateVal = self.ctl.get()
+		vari.currentCCSnd = updateVal
 
-		elif val >=20 and val <60:
-			# print "WoooT"
-			vari.currentCC0Val = val
 
-		elif val >= 60:
-			# print "MAX POWER!"
-			vari.currentCC0Val = val
 
 
 class OSCIn():
@@ -57,6 +57,12 @@ class OSCIn():
 
 	def getVal(self):
 		return self.rec.get(identifier = '/depth')
+
+
+
+
+
+
 
 
 ########################## IN TESTING START

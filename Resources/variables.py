@@ -5,12 +5,23 @@
 # This script file is to be filed under the Resources directory of the MuPoSy
 # project.
 
-
+from pyo import *
 import random
 
 mainTempo = 1  # en seconde
+sineTempo = 1  #
 
-currentCC0Val = 0  # pour transmettre les valeurs CC
+currentCCVoix = 0  # pour transmettre les valeurs CC pour Voix
+currentCCSnd = 0  # pour transmettre les valeurs CC pour Sons
+
+
+outFiltFreq = 0 # used to change the master filter, set by CC
+outFiltFreqSig = SigTo(outFiltFreq,0.05)
+
+sineGenMul = 0 # to change the volume of the SineGen, set by CC
+
+synthGenMul = 1 # to change the volume of the SynthGens, set by CC
+
 
 reuse = True # determines if a sequence keeps going, or new parameters should be applied
 
@@ -61,29 +72,26 @@ genStore = {"osc": [],
 genStMain = []
 
 
-
-
+# Initiates the reverb space for samples
+fxRvbInit = random.choice([.02,.1,.3,.5,.8])
 
 
 fx = {  "filter": {
-                    "freq": random.random(), 
-                    "q": random.random()
-        },
-        "disto": {
-                    "lfoFreq": random.uniform(0.1,10),
-                    "amount": random.random()
 
         },
-                "wow": 2, 
-                "patate": 3, 
-                "gens": 
-                    {"gen1": '1a' , "gen2": '2a'}
+        "disto": {
+
+        },
+
      }
 
 
 # to determine if synthGens are played with closed envelopes, or continuously
-randEnvSynth = 10#random.randint(0,100)
 
+
+print "randEnvSynth"
+randEnvSynth = 0#random.randint(0,100)
+print randEnvSynth
 
 
 

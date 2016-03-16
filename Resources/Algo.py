@@ -18,7 +18,7 @@ import Voix as voix
 import SynthGen as synt
 import SamplePlay as samp
 import Effects as effe
-import Trigs
+import Interactivity as inte
 import random, threading, time
 
 
@@ -37,21 +37,20 @@ class AlgoGen:
         self.timeDown = 0  # Time to have the amp of the effects chain go to 0
 
         # First, generate a sound
-
         self.synthNum = random.randint(1,5)  # how many synthGen instances will compose a note
-        print 'algo 1', self.synthNum
-        self.a = [synt.SynthGen(envDur = self.noteDur) for i in range(self.synthNum)]
-        print "self.a",self.a
-        print "self.a",self.a[0]
-        self.a1 = [self.a[i].getOut() for i in range(self.synthNum)]
+        print 'algo 1: ', self.synthNum
+        self.a = synt.SynthGen(envDur = self.noteDur)# for i in range(self.synthNum)]
+        self.a1 = self.a.getOut()# for i in range(self.synthNum)]
+        # self.a1.out()
+        # scope = Scope(self.a1)
 
         #Then applies effects on the list of synths
         #modul changes the intensity or amount of the effects (between 0 and 1)
 
         sfxNum = random.randint(1,5)
-        modulA = random.random()
+        modulA = random.random()/2
         print "modulation a: ", modulA
-        self.a2 = effe.Sfxs(self.a1,modu=modulA, numFXs=sfxNum, mult=0.8)
+        self.a2 = effe.Sfxs(self.a1,modu=modulA, numFXs=sfxNum, mult=0.8, rvb=1)
         print self.a2.getDur()
         # self.tDown = threading.Thread(target=self.volDown).start()
 
@@ -60,7 +59,7 @@ class AlgoGen:
         time.sleep(self.a2.getDur()+2)
         self.ending()
 
-    def ending(self):
+    def ending(self):  # Not in use, linked to volDown
         print 'Ending AlgoGen'
         del self.a,self.a1,self.a2,self.trigA1,self.trigA2,self.trigA3,self.tDown
 
@@ -76,17 +75,16 @@ class AlgoGen:
         #and triggers the notes also every 3 seconds, 65% this script is run.
         # 35% of the time it is a continuous stream of sound
         if vari.randEnvSynth >= 35:
-            self.trigA1 = TrigFunc(util.genMet, [self.a[i].setNewNote() for i in range(self.synthNum)])
+            self.trigA1 = TrigFunc(util.genMet, self.a.setNewNote)# for i in range(self.synthNum)])
             self.trigA2 = TrigFunc(util.genMet, self.retriggin)
         else:
             #For a minimum of variation, selects new random pitch every few seconds.
-            self.trigA0 = TrigFunc(util.genMet, self.a[0].testing)
-            self.trigA1 = TrigFunc(util.genMet, self.a[0].setNewNote)
+            self.trigA1 = TrigFunc(util.genMet, self.a.setNewNote)
             # self.trigA1 = TrigFunc(util.genMet, [self.a[i].setNewNote() for i in range(self.synthNum)])
 
         #To trigger set notes, via patA2
     def retriggin(self):
-        [self.a[i].repeatJit() for i in range(self.synthNum)]
+        self.a.repeatJit()# for i in range(self.synthNum)]
 
 
     def doinItRand(self,time=10):
@@ -101,7 +99,6 @@ class AlgoGen:
         # 35% of the time it is a continuous stream of sound
         if vari.randEnvSynth >= 35:
             self.patA2 = Pattern(self.retrigginRand, self.noteDur).play()
-
         self.end = CallAfter(self.ending,self.time).play()
 
         #To trigger random notes
@@ -120,20 +117,20 @@ class AlgoSamp:
 
         # Generates sound from a granulated audio file
         self.b = samp.GranuleSf()
-        # self.b1 = self.b.getOutInit()
-        self.b1 = self.b.getOut()
+        self.b1 = self.b.getOutInit()
+        # self.b1 = self.b.outRand()
 
         modulB = random.random()/10
         print "modulation b: ", modulB
-        self.b2 = effe.Sfxs(self.b1,modu=modulB, numFXs=random.randint(1,4), rvb=1)
+        self.b2 = effe.Sfxs(self.b1,modu=modulB, numFXs=random.randint(1,4), rvb=1)   # TESTING
         # Get the duration of the main env
-        self.bTime = self.b2.getDur()
+        # self.bTime = self.b2.getDur()    # TESTING
         self.patTime = random.randint(1,4)
         # Change the samples in the order they were called to prevent calling before
         # playback is done.
         # self.tDown = threading.Thread(target=self.volDown).start()
 
-        coin = 0#random.random()
+        coin = random.random()
         randFreq = random.randint(3,20)
         if coin >0.5:
             self.tFreq = Randi(0.1,2,randFreq)
@@ -146,7 +143,7 @@ class AlgoSamp:
         self.patB1 = TrigFunc(self.trig,self.repChoice)
 
     def volDown(self):   # not in use
-        time.sleep(self.bTime+2)
+        # time.sleep(self.bTime+2)
         self.ending()
 
     def ending(self):
@@ -161,12 +158,14 @@ class AlgoSamp:
         # patB1.time = random.triangular(0.01,10,1)
 
     def beatFill(self):
-        print "hey"
+        print "Beat Fill hey"
         self.trig
         self.trig.fill()
 
     def space(self):
-        self.b2.sigB.size = random.choice([.02,.1,.3,.5,.8])
+        newVal = random.choice([.02,.1,.3,.5,.8])
+        # self.b2.sigB.size = SigTo(newVal, 1,vari.fxRvbInit)
+        vari.fxRvbInit = newVal
 
 
 
@@ -201,7 +200,7 @@ class Notes:
 
 
         self.notes = [x + self.root for x in self.notes]      #adding the root to the notes list
-        octaves = [12,24,36,-12,-24,-36]
+        octaves = [12,-12,-24,-36]
         self.selOctaves = random.sample(octaves, random.randint(1,4))
         self.selOctaves.append(0)
         vari.octColl.append(self.selOctaves)
@@ -281,5 +280,17 @@ class Notes:
                     self.notesFull.append(x+i)
             self.notesFull.sort()
             vari.scaleInUse = [midiToHz(x) for x in self.notesFull]
+
+
+
+
+
+
+
+
+
+
+
+
 
 
