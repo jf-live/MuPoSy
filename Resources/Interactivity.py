@@ -19,12 +19,6 @@ from pyo import *
 import variables as vari
 
 
-#### For testing purposes
-# print pm_list_devices()
-# s = Server()
-# s.setMidiInputDevice(0)
-# s.boot()
-
 # to get CC for voice, independant as voice stops this when playing
 class MidiCCIn():
 	def __init__(self):
@@ -59,22 +53,3 @@ class OSCIn():
 		return self.rec.get(identifier = '/depth')
 
 
-
-
-
-
-
-
-########################## IN TESTING START
-# a = OSCIn()
-# b = Sine(a.getVal(), mul=0.4).out()
-########################## IN TESTING END	
-
-# a = MidiCCIn()
-
-# met = Metro(.1).play()
-# tr = TrigFunc(met, a.printin)
-
-
-
-# s.gui(locals())

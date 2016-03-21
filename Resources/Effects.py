@@ -11,9 +11,6 @@ import Engine as engi
 from pyo import *
 import random
 
-# s = Server().boot()
-
-
 class Sfxs:
     """
     This is where the audio signal from the gens is picked up and processed for output.
@@ -58,13 +55,6 @@ class Sfxs:
         ###FX selection
         origFXs = []
         origFXs = random.sample([0,1,2,3,4,5,6],numFXs)
-        #----------------------------------------------------------START-OLD
-        # for i in range(numFXs):
-            # newChoice = random.choice([0,1,2,3,4,5,6])
-            # while newChoice in origFXs:
-            #   newChoice = random.choice([0,1,2,3,4,5,6])
-            # origFXs.append(newChoice)
-        #------------------------------------------------------------END-OLD
 
         ###FX order sorting
         ### Disto always 1st, then harmon, filter or phaser, 
@@ -84,36 +74,6 @@ class Sfxs:
         for sub in tempFXs:
             self.newFXs += sub
         print self.newFXs
-
-        #----------------------------------------------------------START-OLD
-        # for i in range(numFXs):
-        #   current = origFXs[i]
-        #   if current == 0:
-        #       newFXs.insert(0, current)
-        #   elif current == 1 or current == 2 or current == 6:
-        #       if len(newFXs) >= 1:
-        #           if newFXs[0] is not 0:
-        #               newFXs.insert(0, current)
-        #           else:
-        #               newFXs.insert(1, current)
-        #       elif len(newFXs) == 0:
-        #           newFXs.insert(0,current)
-        #       else:
-        #           newFXs.append(current)
-        #   elif current == 3 or current == 4:
-        #       if len(newFXs) >= 1:
-        #           if newFXs[-1] is not 5:
-        #               newFXs.insert(len(newFXs), current)
-        #           else:
-        #               newFXs.insert(len(newFXs)-1, current)
-        #       elif len(newFXs) == 1:
-        #           if newFXs[0] is 5:
-        #               newFXs.append(current)
-        #       else:
-        #           newFXs.insert(len(newFXs)-2, current)
-        #   elif current == 5:
-        #       newFXs.append(current)
-        #------------------------------------------------------------END-OLD
 
         # envelope for main volume profile
         inRamp = random.randint(1000,3000)
@@ -145,11 +105,6 @@ class Sfxs:
             if self.newFXs[i] == 6:
                 print "phaser on"
                 self.fxSig.append(self.phaser(modu))
-            ###Reverb maybe should not be used here 
-            ###    as tail will be cut prob most of the time.
-            # if newFXs[i] == 7:
-            #   print "reverb on"
-            #   self.reverb(modu)
         print "dict",self.fxDict
         self.out()
 
@@ -172,11 +127,6 @@ class Sfxs:
     def harmon(self, intense=1, mult = 1):
         tranList = [0,7,12,-5,-12,-24]
         randRange = cons.NUMOUTS+random.randint(0,6)
-        # following if to avoid clipping if randRange == 1 (hopefully)
-        if randRange == 1:
-            amp = 0.93 ** randRange
-        else:
-            amp = 0.93 ** randRange + .1
         coin1 = random.randint(0,1)
         if coin1 == 0:
             tran = [random.choice(tranList) for i in range(randRange)]
@@ -184,17 +134,16 @@ class Sfxs:
             tran = random.choice(tranList)
         coin2 = random.randint(0,1)
         if coin2 == 0:
-            lfoFreq = [random.uniform(0.1,7*intense)*amp for i in range(randRange)]
+            lfoFreq = [random.uniform(0.1,7*intense) for i in range(randRange)]
         else:
-            lfoFreq = random.uniform(0.1,7*intense)*amp
+            lfoFreq = random.uniform(0.1,7*intense)
         self.fxDict['harmon']['lfoFreq'] = lfoFreq
         vibInt = random.random()
         self.vibHarm = LFO(lfoFreq, type=random.randint(0,6), mul=1*vibInt)
-        self.sigTran = Harmonizer(self.sig,tran+self.vibHarm, mul=0.9*amp*mult)
+        self.sigTran = Harmonizer(self.sig,tran+self.vibHarm, mul=0.9*mult)
         intenseDry = random.triangular(0,.9,0.5)
         self.sig2 = [self.sig[i] * intenseDry for i in range(len(self.sig))] + self.sigTran * intense
         self.sig = self.sig2.mix(cons.NUMOUTS)
-        # self.sig = Compress(self.sig,-12,5)
         return self.sig
 
     def filter(self, intense=1, mult = 1):
@@ -288,7 +237,6 @@ class Sfxs:
         feed = random.triangular(0.1,0.6,0.3)
         self.sig2 = Delay(self.sig, delay*intense, feed*intense, mul=0.7)
         self.sig = self.sig2.mix(cons.NUMOUTS)
-        # self.sig = Compress(self.sig,-20,2)
         return self.sig
 
     def phaser(self, intense=1, mult = 1):
@@ -317,42 +265,20 @@ class Sfxs:
         self.sig = self.sig2.mix(cons.NUMOUTS)
         return self.sig
 
-    #### NOT IN USE, COULD BE
-    # def reverb(self, intense=1, mult = 1):
-    #     size = random.uniform(0.1,0.9)
-    #     coin = random.randint(0,1)
-    #     if coin == 0:
-    #         size = [size+random.uniform(-0.05,0.05) for i in range(cons.NUMOUTS)]
-    #     damp = random.random()
-    #     bal = random.triangular(0.1,1,0.3)*intense
-    #     self.sig2 = Freeverb(self.sig, size, damp, bal, mul = mult)
-    #     self.sig = self.sig2.mix(cons.NUMOUTS)
-    #     return self.sig
 
     def out(self):
         print "Number of output channels: ", len(self.sig)
         print "Number of output channels FX: ", len(self.fxSig)
         if len(self.fxSig)>2:
-            print "out1"
             self.sigA = Mix(self.fxSig, cons.NUMOUTS)
         else:
-            print "out2"
             self.sigA = self.sig
-        print len(self.sigA)
-
         self.outFilt = Biquad(self.sigA, type = 1, freq=0, q=6)
-
-
         if self.rvb == 0:
             self.sigB = Freeverb(self.outFilt,bal = 0)
         else:
             self.sigB = Freeverb(self.outFilt, random.choice([.02,.1,.3,.5,.8]))
-        self.sigC = Compress(self.sigB,-20,10,mul=self.mainEnvGo) # Where the main amp env is applied
-        self.sigD = Clip(self.sigB).out()
-        self.peak1 = PeakAmp(self.sigA)
-        self.p1 = Print(self.peak1, message = "1")
-        self.peak2 = PeakAmp(self.outFilt)
-        self.p2 = Print(self.peak2, message = "2")
+        self.sigC = Compress(self.sigB,-20,10,mul=self.mainEnvGo).out() # Where the main amp env is applied
 
     def getDur(self, amp=1, tTime=1):
         return (1/self.mainEnvDur)
@@ -361,11 +287,6 @@ class Sfxs:
         speedMod = 1/vari.mainTempo
         self.outFilt.freq = SigTo(vari.outFiltFreq,0.5)
         self.outFilt.freq = vari.outFiltFreq
-        # if 0 in self.newFXs:
-        #     if isinstance(self.fxDict['disto']['lfoFreq'],float):
-                
-        #     else:
-        #         print "not"
         if 0 in self.newFXs:
             if isinstance(self.fxDict['disto']['lfoFreq'],list):
                 l = [x * speedMod for x in self.fxDict['disto']['lfoFreq']]
@@ -402,28 +323,11 @@ class Sfxs:
                 self.panPan.freq = l
             else:
                 self.panPan.freq = self.fxDict['panning']['lfoFreq'] * speedMod
-            print 'cbcbcbcbcbbcbcbcbcbcbcbcbcbcbc'
         if 6 in self.newFXs:
             if isinstance(self.fxDict['phaser']['lfoFreq'],list):
                 l = [x * speedMod for x in self.fxDict['phaser']['lfoFreq']]
                 self.freqPhas.freq = l
             else:
                 self.freqPhas.freq = self.fxDict['phaser']['lfoFreq'] * speedMod
-            print 'roroororororororororor'
 
-
-
-
-
-
-
-# a = Noise(mul=0.6)
-# a = Sine(mul=0.4)
-# modul = random.random()
-# print "modul", modul
-# a = [Sine(random.randint(300,3000),mul=0.2) for i in range(2)]
-# b = [Sfxs(a,modu=modul, numFXs=2) for i in range(1)]
-
-
-# s.gui(locals())
 

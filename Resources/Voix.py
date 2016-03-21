@@ -27,11 +27,6 @@ from HTMLParser import HTMLParser
 from pyo import *
 
 
-
-# s = Server().boot()
-# s.start()
-
-
 # Lines of poems are selected
 class TxtSelect:
     def __init__(self,  listOfTxts = cons.POEMS):
@@ -40,6 +35,9 @@ class TxtSelect:
         # Add pauses between lines of text for a more natural flow
         pause = str(random.randint(250,600))
         pauseMSG = '[[slnc ' + pause + ']]'
+
+        # To create a bumper that separates the poems in the txt file
+        self.bumper = ""
 
         for i in range(random.randint(1,3)):
             numLines = random.randint(2,4)
@@ -90,6 +88,25 @@ class TxtSelect:
             util.dataF.writeln('\n')
             tempTxt.writeln('\n')
             tempTxt.writelnln(pauseMSG)
+
+        # To draw a separation line between poems
+        for i in range(random.randint(4,6)):
+            itemsL = ["_","-","~"]
+            itemsP = ["!","@","#","∂","æ","ß","ƒ","∫","∑"]
+            coin = random.random()
+            lenL = random.randint(8,10)
+            if i == (int(lenL/2)):
+                self.bumper += "(fin du poème)"
+            if coin < 0.55:
+                char = random.choice(itemsL)
+                for j in range(lenL):
+                    self.bumper += char
+            else:
+                for j in range(random.randint(1,4)):
+                    char = random.choice(itemsP)
+                    self.bumper += char
+        util.dataF.writeln(self.bumper)
+
         tempTxt.close()
 
     def pickALine(self, listOfTxts):
@@ -115,9 +132,7 @@ class Tts:
     def __init__(self, inTxt):#, outPath):
         # Here is the terminal command line to use.  say is the TTS app, a string 
         # to be read, -o is the audio file to save the spoken text to.
-        #Outputs aiff file, 48kHz 24bit
-        # self.outPath = outPath
-        # print 'test', self.outPath
+        # Outputs aiff file, 48kHz 24bit
         self.inTxt = inTxt
         self.outName = int(time.time()*1000)
 
@@ -139,7 +154,6 @@ class Tts:
         # Here the command line is processed in a separate thread, not blocking 
         # the rest of the code.  shell=True needs to be included.
         self.process=subprocess.Popen(command, shell=True)
-        # sf = SfPlayer(myPath).out(delay = 4) #This never worked...
 
     def getPath(self):
         somePath = os.path.dirname(os.path.realpath(self.outFullName))
@@ -150,7 +164,6 @@ class Tts:
         return self.outFullName
 
     def clean(self):
-        print "test clean"
         os.remove(self.inTxt)
         os.remove(self.outFullName)
         print 'clean'
@@ -172,10 +185,11 @@ class ReadPoem:
         self.time = random.uniform(0.03,0.2)
         self.randTime = [random.uniform(0.9,1.1)*self.time for i in range(2)]
         self.c3 = Delay(self.c2, self.randTime, 
-                                 random.uniform(0.1,0.5), 
+                                 random.uniform(0.3,0.8), 
                                  mul = 0.9)
         self.c23 = self.c2 + self.c3
-        self.c4 = Freeverb(self.c23, .5, mul = 0.8, bal = 0.3).out()
+        # self.c4 = Freeverb(self.c23, .5, mul = 0.8, bal = 0.3).out()
+        self.c4 = WGVerb(self.c23, random.uniform(0.2,0.7)).out()
         self.done = self.cleanUp()
 
     def cleanUp(self):
@@ -198,13 +212,13 @@ def playing(delay):
     global callerSnd
     global callerReset
     global po
-    # print "Voix"
-    # print "vari",vari.currentCCVoix
     if vari.currentCCVoix > 110:
         midiMet.stop()
         po = ReadPoem(delay)
+        # Waits 2 seconds before playing to allow for audio file to be generated
         callerSnd = CallAfter(po.playVoice, time=2)
-        callerReset = CallAfter(ccValReset, time=30)
+        # Waits 50 seconds before the next poem can be generated, to avoid cutoffs
+        callerReset = CallAfter(ccValReset, time=50)  
 
 signalIn = inte.MidiCCIn()
 
@@ -215,9 +229,4 @@ ttsDel = 2
 midiMet = util.eventMetVoix
 tr = TrigFunc(midiMet, signalIn.retVal)
 tr2 = TrigFunc(midiMet, playing, ttsDel)
-
-
-
-
-# s.gui(locals())
 

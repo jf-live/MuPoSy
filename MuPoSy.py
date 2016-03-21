@@ -7,24 +7,26 @@
 # 2016
 #
 # The working title MuPoSY stands for Music Poetry System (Système de 
-# Musique et Poésie).  The point of this software is to create an interactive 
-# installation generating algorithmic music and poetry.
+#     Musique et Poésie).  The point of this software is to create an  
+#     interactive installation generating algorithmic music and poetry.
 #
 # Poems are generated from existing poems found in Gaston Miron's L'homme 
-# rapaillé, Hector de Saint-Denys Garneau's Regards et jeux dans l’espace, and 
-# Émile Nelligan's complete works.
+#     rapaillé, Hector de Saint-Denys Garneau's Regards et jeux dans l’espace, 
+#     and Émile Nelligan's complete works.
 #
 # Sound generators are located in the SynthGen and SamplePlay files.
 # Sound effects are located in the Effects file.
 # Voice synthesis and text retrieval tools are located in the Voix file.
-# The algorithmic engine is located in the Algo file. (TBD)
+# The algorithmic engine is located in the Algo file.
 # The kinect interactions are managed in the Interactivity file.
 # A few utilities are stored in the utilities file.
 #
-# Most variables are generated in the variables file. (TBD)
+# Variables that need to be accessed from multiple modules are located 
+#     in the variables file.
 # Constants are stored in the constants file.
 #
-# To add text to the data file of the current run, use util.dataF.write(str).
+# To add text to the data file of the current run for stats purposes, 
+#     use util.dataF.write(str).
 #
 # IMPORTANT : This script must be run on Mac OS or Linux in order to work.
 #
@@ -32,7 +34,7 @@
 # 	http://stackoverflow.com/questions/1969240/mapping-a-range-of-values-to-another
 #
 ###############################################################################
-### Seeding is still useful to recall 'presets'.
+### Seeding is useful to recall 'presets'.
 
 
 from pyo import *
@@ -41,6 +43,7 @@ s = Server(sr = 48000) #, buffersize = 512)
 print pm_list_devices()
 # nanoKontrol is connected here.  See Midi.py for details.
 s.setMidiInputDevice(0)
+s.recordOptions(sampletype = 1) # sets recording to 24bit
 s.boot()
 
 import Resources.utilities as util
@@ -55,20 +58,13 @@ import Resources.SynthGen as synt
 import Resources.SamplePlay as samp
 import Resources.Effects as effe
 
-
-
-print cons.MAIN_PATH
-
-
-########### What follows is only for early testing purposes...  #############
-
-
 # All calling is now done from Engine.py and Voix.py
 
 
-# engi.Engine()
-
-
+# To track the current number of streams on the server:
+def numStreams():
+	print "streams:",s.getNumberOfStreams()
+pat = Pattern(numStreams,1).play()
 
 
 s.gui(locals())

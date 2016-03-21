@@ -9,6 +9,7 @@
 
 import constants as cons
 import variables as vari
+import utilities as util
 import os, random, fnmatch
 from pyo import *
 
@@ -17,29 +18,48 @@ from pyo import *
 # s.start()
 
 
-#chooses 1 random file in a given folder, excludes hidden files and folders
-class RandListDir:
-    def doIt(self,pathTo):
-        toChoose = [f for f in os.listdir(pathTo) if f.endswith(".aif") or 
-                                                     f.endswith(".wav") or 
-                                                     f.endswith(".aiff")]
-        toReturn = random.choice(toChoose)
-        print "Sound loaded", toReturn
-        return toReturn
+# first load all samples in tables
+allSnds = []
+allSndsTables = []
 
-    def doItDeep(self,pathTo):
-        """
-        Retourne des fichiers son pour un dossier et sa suite
-        """
-        self.toChoose = []
+def loadObjSono(path=cons.SFFOLDER_PATH):
+    global allSnds
+    global allSndsTables
+    # loads all samples from path
+    allSnds = util.RandListDir_noHidden().deepAll(path)
+    for i in allSnds:
+        a = SndTable(i)
+        allSndsTables.append(a)
 
-        for root, dirnames,filenames in os.walk(pathTo):
-            for filename in fnmatch.filter(filenames, ("*.aif" or "*.wav" or "*.aiff")):
-                self.toChoose.append(os.path.join(root,filename))
-        toReturn = random.choice(self.toChoose)
-        print "Sound loaded", toReturn
-        return toReturn
 
+loadObjSono()
+
+print "# of loaded samples:", len(allSndsTables)
+
+############################################################# DEPRECATED - START
+# #chooses 1 random file in a given folder, excludes hidden files and folders
+# class RandListDir:
+#     def doIt(self,pathTo):
+#         toChoose = [f for f in os.listdir(pathTo) if f.endswith(".aif") or 
+#                                                      f.endswith(".wav") or 
+#                                                      f.endswith(".aiff")]
+#         toReturn = random.choice(toChoose)
+#         print "Sound loaded", toReturn
+#         return toReturn
+
+#     def doItDeep(self,pathTo):
+#         """
+#         Retourne des fichiers son pour un dossier et sa suite
+#         """
+#         self.toChoose = []
+
+#         for root, dirnames,filenames in os.walk(pathTo):
+#             for filename in fnmatch.filter(filenames, ("*.aif" or "*.wav" or "*.aiff")):
+#                 self.toChoose.append(os.path.join(root,filename))
+#         toReturn = random.choice(self.toChoose)
+#         print "Sound loaded", toReturn
+#         return toReturn
+# ############################################################# DEPRECATED - END
 
 
 
@@ -65,10 +85,10 @@ class SoundRead:
         self.fileSel = fileSel
         self.speed = speed
         if mode == 0:
-            # rSound = RandListDir().doIt(path)
-            rSound = RandListDir().doItDeep(path)
-            sFile = os.path.join(path,rSound)
-            self.sf = SfPlayer(sFile, speed)
+            rSound = util.RandListDir_noHidden().doItDeep(self.path)
+            # sFile = os.path.join(path,rSound)
+            # self.sf = SfPlayer(sFile, speed)
+            self.sf = SfPlayer(rSound, speed)
         elif mode == 1:
             self.sf = SfPlayer(self.fileSel, self.speed)
 
@@ -88,10 +108,9 @@ class SoundRead:
             speed = self.speed
         else:
             self.speed = speed
-        rSound = RandListDir().doIt(self.path)
-        rSound = RandListDir().doItDeep(self.path)
-        sFile = os.path.join(self.path,rSound)
-        self.sf = SfPlayer(sFile, speed)
+        rSound = RandListDir_noHidden().doItDeep(self.path)
+        # sFile = os.path.join(self.path,rSound)
+        self.sf = SfPlayer(rSound, speed)
 
 
 ###class where granulation is used on soundfiles
@@ -99,50 +118,51 @@ class GranuleSf:
     """
     This class is to granulate a sound.
     Mode 0 is random sound.
-    Mode 1 is a specific sound, needs to be specified with fileSel.
+    Mode 1 is a specific sound, needs to be specified with fileSel.  NOT IN USE!
     """
     def __init__(self, mode = 0, path=cons.SFFOLDER_PATH, fileSel=cons.SONTEST, modu=1, dur=1):
         print "sample"
-        self.t = SndTable()
+        global allSndsTables
+        global allSnds
+        # self.t = SndTable()
         self.path = path
         self.fileSel = fileSel
         self.mode = mode
-        randSel = random.randint(0,1) # Chooses if Granule or Granulator is used
-
+        randSel = random.random() # Chooses if Granule or Granulator is used
+        self.snd = None
         if self.mode == 0:
-            # rSound = RandListDir().doIt(path)
-            rSound = RandListDir().doItDeep(self.path)
-            sFile = os.path.join(self.path,rSound)
-            vari.sampColl.append(sFile)
-            self.t.setSound(sFile)
-        elif self.mode == 1:
+            selSndIndex = random.randint(0,len(allSndsTables)-1)
+            # self.snd = random.choice(allSndsTables)
+            self.snd = allSndsTables[selSndIndex]   # Selects to table to be played
+            vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples
+        # NOT IN USE:
+        elif self.mode == 1:   # THIS DOES NOT WORK ANY MORE, CAUSED PROBLEMS WITH LATE LOADING OF SAMPLES
             sFile = os.path.join(self.path,self.fileSel)
             vari.sampColl.append(sFile)
-            self.t.setSound(sFile)
+            self.t.setSound(sFile)   # THIS DOES NOT WORK ANY MORE, CAUSED PROBLEMS WITH LATE LOADING OF SAMPLES
+        
         grEnv = HannTable()
         
         ### Pour obtenir le sampling rate
         sr = grEnv.getServer().getSamplingRate()
 
-        end = self.t.getSize()
-        # end = self.t.getSize() - s.getSamplingRate() * 0.2
-        # end = self.t.getSize() - 48000 * 0.2  #version simplifiée (voir ligne précédente), à revoir...
+        end = self.snd.getSize()
 
         self.setEnv()
 
         self.noteEnv = Adsr(self.att, self.dec, self.sus, self.rel, dur = self.dur)
 
-        if randSel == 0:
+        if randSel >= 0.5:
             self.pos = Xnoise(freq=10, mul=end)
             dns = Randi(min=20, max=30, freq=3)
             pit = Randi(min=0.59, max=2.01, freq=100)#+RandInt(20,1)
-            self.gr = Granule(self.t, grEnv, dens=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
+            self.gr = Granule(self.snd, grEnv, dens=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
 
         else:
-            self.pos = Phasor(self.t.getRate()*random.uniform(0.01,0.5), 0, self.t.getSize())
+            self.pos = Phasor(self.snd.getRate()*random.uniform(0.01,0.5), 0, self.snd.getSize())
             dns = random.randint(10, 30)
             pit = Randi(min=0.59, max=2.01, freq=3)#+RandInt(20,1)
-            self.gr = Granulator(self.t, grEnv, grains=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
+            self.gr = Granulator(self.snd, grEnv, grains=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
 
         self.gr2 = Compress(self.gr, -30,300,10, mul = 0.6)
 
@@ -165,26 +185,31 @@ class GranuleSf:
         self.fileSel = fileSel
         self.path = path
         if len(vari.sampColl) < vari.sampCollLen:
-            # new sampe
             coin = random.random()
-            if coin > 0.5:
+            # New sound being played:
+            if coin >= 0.5:
                 if self.mode == 0:
-                    # rSound = RandListDir().doIt(path)
-                    rSound = RandListDir().doItDeep(self.path)
-                    sFile = os.path.join(self.path,rSound)
-                    vari.sampColl.append(sFile)
-                    self.t.setSound(sFile)
+                    selSndIndex = random.randint(0,len(allSndsTables)-1)
+                    # self.snd = random.choice(allSndsTables)
+                    self.snd = allSndsTables[selSndIndex]   # Selects to table to be played
+                    vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples
+                    # self.snd = random.choice(allSndsTables)
+                    # vari.sampColl.append(sFile)
+                ### DOES NOT WORK, PROBLEMS WHEN CHANGING SAMPLE:
                 elif self.mode == 1:
                     sFile = os.path.join(self.path,self.fileSel)
                     vari.sampColl.append(sFile)
                     self.t.setSound(sFile)
+            # Prevously played sound:
             else:
-                sFile = random.choice(vari.sampColl)
-                self.t.setSound(sFile)
+                selSndIndex = random.choice(vari.sampColl)
+                index = allSnds.index(selSndIndex)
+                self.snd = allSndsTables[index]   # Selects to table to be played
         else:
             # Reuse
-            sFile = random.choice(vari.sampColl)
-            self.t.setSound(sFile)
+            selSndIndex = random.choice(vari.sampColl)
+            index = allSnds.index(selSndIndex)
+            self.snd = allSndsTables[index]   # Selects to table to be played
 
 
     def resetEnv(self):  #sets new attributes for Adsr env
@@ -257,12 +282,13 @@ class GranuleSf:
         return self.a
 
     def chooseNew(self):
-        # rSound = RandListDir().doIt(self.path)
-        self.gr2.mul = 0
-        rSound = RandListDir().doItDeep(self.path)
-        sFile = os.path.join(self.path,rSound)
-        vari.sampColl.append(sFile)
-        self.t.setSound(sFile)
+        self.gr2.mul = SigTo(0,0.005)
+        # rSound = RandListDir().doItDeep(self.path)
+        # sFile = os.path.join(self.path,rSound)
+        # vari.sampColl.append(sFile)
+        selSndIndex = random.randint(0,len(allSndsTables)-1)
+        self.snd = allSndsTables[selSndIndex]   # Selects to table to be played
+        vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples
         self.gr2.mul = self.noteEnv*0.8
 
 # a = GranuleSf()

@@ -6,7 +6,7 @@
 # project.
 
 
-import time, random, os
+import time, random, os, fnmatch
 import variables as vari
 import constants as cons
 from pyo import *
@@ -75,5 +75,45 @@ fileName = 'Test_' + createTime[:-5] + '.txt'
 fileName = os.path.join(cons.STATS_PATH,fileName)
 dataF = TxtFile(fileName)
 dataF.write('\n' + 'seed is: ' + str(rSeed) + '\n')
+
+
+
+#chooses 1 random file in a given folder, excludes hidden files and folders
+class RandListDir_noHidden:
+    def doItDeep(self,pathTo):
+        """
+        Retourne un fichier son pour un dossier et sa suite
+        """
+        self.toChoose = []
+
+        for root, dirnames,filenames in os.walk(pathTo):
+            for filename in fnmatch.filter(filenames, ("*.wav" or "*.aif" or "*.aiff" or "*.wave")):
+                self.toChoose.append(os.path.join(root,filename))
+
+        self.toReturn = random.choice(self.toChoose)
+        return self.toReturn
+
+    def deepAll(self,pathTo):
+        """
+        Retourne tous les fichiers son pour un dossier et sa suite
+        """
+        self.toChoose = []
+
+        for root, dirnames,filenames in os.walk(pathTo):
+            for filename in fnmatch.filter(filenames, ("*.aif" or "*.wav" or "*.aiff")):
+                self.toChoose.append(os.path.join(root,filename))
+
+        return self.toChoose
+
+
+    def doIt(self,pathTo):
+        """
+        Retourne un fichier son pour un seul dossier
+        """
+        self.toChoose = [f for f in os.listdir(pathTo) if f.endswith(".aif") or 
+                                                          f.endswith(".wav") or
+                                                          f.endswith(".aiff")]
+        self.toReturn = random.choice(self.toChoose)
+        return self.toReturn
 
 

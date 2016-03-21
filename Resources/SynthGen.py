@@ -28,7 +28,6 @@ class SynthGen:
         self.envDur = envDur    #envelope duration
         self.wide = wide    #If gen is all channels or 1 channel
         self.randChooser = int(random.triangular(0,13, random.randint(0,13)))
-        # self.randChooser = 13
         print "wave", self.randChooser
         #0@5: LFO Saw Up, SawDown, Square, Triangle, Pulse, Bipolar Pulse
         #6: BLIT

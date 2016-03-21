@@ -90,7 +90,7 @@ fx = {  "filter": {
 
 
 print "randEnvSynth"
-randEnvSynth = 0#random.randint(0,100)
+randEnvSynth = random.randint(0,100)
 print randEnvSynth
 
 

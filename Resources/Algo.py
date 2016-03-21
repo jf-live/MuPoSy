@@ -39,10 +39,8 @@ class AlgoGen:
         # First, generate a sound
         self.synthNum = random.randint(1,5)  # how many synthGen instances will compose a note
         print 'algo 1: ', self.synthNum
-        self.a = synt.SynthGen(envDur = self.noteDur)# for i in range(self.synthNum)]
-        self.a1 = self.a.getOut()# for i in range(self.synthNum)]
-        # self.a1.out()
-        # scope = Scope(self.a1)
+        self.a = [synt.SynthGen(envDur = self.noteDur) for i in range(self.synthNum)]
+        self.a1 = [self.a[i].getOut() for i in range(self.synthNum)]
 
         #Then applies effects on the list of synths
         #modul changes the intensity or amount of the effects (between 0 and 1)
@@ -69,22 +67,19 @@ class AlgoGen:
         '''
         self.time = time
         ## Evolves the parameters of the gens
-        # self.trigA0 = TrigFunc(util.genMet, [self.a[i].setEvo(i) for i in range(self.synthNum)])
         #For a minimum of variation, selects new random pitch every few seconds.
-        # self.trigA1 = TrigFunc(util.genMet, [self.a[i].setNewNote() for i in range(self.synthNum)])   #### MOVED DOWN A FEW LINES
         #and triggers the notes also every 3 seconds, 65% this script is run.
         # 35% of the time it is a continuous stream of sound
         if vari.randEnvSynth >= 35:
-            self.trigA1 = TrigFunc(util.genMet, self.a.setNewNote)# for i in range(self.synthNum)])
+            self.trigA1 = [TrigFunc(util.genMet, self.a[i].setNewNote) for i in range(self.synthNum)]
             self.trigA2 = TrigFunc(util.genMet, self.retriggin)
         else:
             #For a minimum of variation, selects new random pitch every few seconds.
-            self.trigA1 = TrigFunc(util.genMet, self.a.setNewNote)
-            # self.trigA1 = TrigFunc(util.genMet, [self.a[i].setNewNote() for i in range(self.synthNum)])
+            self.trigA1 = [TrigFunc(util.genMet, self.a[i].setNewNote) for i in range(self.synthNum)]
 
         #To trigger set notes, via patA2
     def retriggin(self):
-        self.a.repeatJit()# for i in range(self.synthNum)]
+        [self.a[i].repeatJit() for i in range(self.synthNum)]
 
 
     def doinItRand(self,time=10):
@@ -118,7 +113,6 @@ class AlgoSamp:
         # Generates sound from a granulated audio file
         self.b = samp.GranuleSf()
         self.b1 = self.b.getOutInit()
-        # self.b1 = self.b.outRand()
 
         modulB = random.random()/10
         print "modulation b: ", modulB
@@ -128,7 +122,6 @@ class AlgoSamp:
         self.patTime = random.randint(1,4)
         # Change the samples in the order they were called to prevent calling before
         # playback is done.
-        # self.tDown = threading.Thread(target=self.volDown).start()
 
         coin = random.random()
         randFreq = random.randint(3,20)
@@ -142,9 +135,6 @@ class AlgoSamp:
 
         self.patB1 = TrigFunc(self.trig,self.repChoice)
 
-    def volDown(self):   # not in use
-        # time.sleep(self.bTime+2)
-        self.ending()
 
     def ending(self):
         print 'Ending AlgoSamp'
@@ -155,7 +145,6 @@ class AlgoSamp:
         self.space()
         self.b.chooseNew()
         self.b1 = self.b.getOutRand(random.uniform(0.001,2))
-        # patB1.time = random.triangular(0.01,10,1)
 
     def beatFill(self):
         print "Beat Fill hey"
@@ -164,7 +153,6 @@ class AlgoSamp:
 
     def space(self):
         newVal = random.choice([.02,.1,.3,.5,.8])
-        # self.b2.sigB.size = SigTo(newVal, 1,vari.fxRvbInit)
         vari.fxRvbInit = newVal
 
 
@@ -209,8 +197,8 @@ class Notes:
             for x in self.notes:
                 self.notesFull.append(x+i)
         self.notesFull.sort()
+        print "scale: ", self.notesFull
         vari.scaleInUse = [midiToHz(x) for x in self.notesFull]
-        print "scale", vari.scaleInUse
 
     def getListNotes(self):
         return self.notesFull
@@ -280,17 +268,5 @@ class Notes:
                     self.notesFull.append(x+i)
             self.notesFull.sort()
             vari.scaleInUse = [midiToHz(x) for x in self.notesFull]
-
-
-
-
-
-
-
-
-
-
-
-
 
 
