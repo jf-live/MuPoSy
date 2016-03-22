@@ -19,17 +19,18 @@ l'espace.  Plus la valeur augmente, simulant qu'une personne approche, plus le
 son passe au second plan.  Il y a un interval minimal de 50 secondes entre 
 les débuts de poèmes.  _Pour une bonne simulation, il faut glisser le fader
 très lentement (comme si c'est une grande salle qu'il faut traverser...)._
-
-Les appels sont faits comme suit:
-
-MuPoSy.py -> Engine.py -> Algo.py -> SynthGen.py   -> Effects.py
-MuPoSy.py -> Engine.py -> Algo.py -> SamplePlay.py -> Effects.py
-MuPoSy.py -> Voix.py
-|-->Interactivity.py
-|-->utilities.py
-|-->variables.py
-|-->constantes.py
-
+  
+Les appels sont faits comme suit:  
+  
+MuPoSy.py -> Engine.py -> Algo.py -> SynthGen.py   -> Effects.py  
+	|						|------> SamplePlay.py -> Effects.py  
+	|  
+	|-->Voix.py  
+	|-->Interactivity.py  
+	|-->utilities.py  
+	|-->variables.py  
+	|-->constantes.py  
+  
 Ce diagramme simplifié ne représente pas les appels inter-modules.
 
 
