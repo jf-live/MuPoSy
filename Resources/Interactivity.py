@@ -21,35 +21,35 @@ import variables as vari
 
 # to get CC for voice, independant as voice stops this when playing
 class MidiCCIn():
-	def __init__(self):
-		self.ctl = Midictl(ctlnumber=0, minscale=0, maxscale=127)
-		self.p = Port(self.ctl, .02)
+    def __init__(self):
+        self.ctl = Midictl(ctlnumber=0, minscale=0, maxscale=127)
+        self.p = Port(self.ctl, .02)
 
-	def retVal(self):
-		updateVal = self.ctl.get()
-		vari.currentCCVoix = updateVal
+    def retVal(self):
+        updateVal = self.ctl.get()
+        vari.currentCCVoix = updateVal
 
 # to get CC for everything else
 class MidiCCInSnd():
-	def __init__(self):
-		self.ctl = Midictl(ctlnumber=0, minscale=0, maxscale=127)
-		self.p = Port(self.ctl, .02)
+    def __init__(self):
+        self.ctl = Midictl(ctlnumber=0, minscale=0, maxscale=127)
+        self.p = Port(self.ctl, .02)
 
-	def retVal(self):
-		updateVal = self.ctl.get()
-		vari.currentCCSnd = updateVal
+    def retVal(self):
+        updateVal = self.ctl.get()
+        vari.currentCCSnd = updateVal
 
 
 
 
 class OSCIn():
-	def __init__(self):
-		self.rec = OscReceive(port=10001, address = ['/depth'])
+    def __init__(self):
+        self.rec = OscReceive(port=10001, address = ['/depth'])
 
-	def getSig(self):
-		return self.rec['/depth']
+    def getSig(self):
+        return self.rec['/depth']
 
-	def getVal(self):
-		return self.rec.get(identifier = '/depth')
+    def getVal(self):
+        return self.rec.get(identifier = '/depth')
 
 

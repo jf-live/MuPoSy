@@ -32,57 +32,77 @@ from pyo import *
 notes = algo.Notes(key='D')
 
 
-# to play synth "pads"
-gen = None
+# to play synths
+gen1 = None
+gen2 = None
+timeSynth = 20
 
-def callGen():
-	global patGens1
-	global patGens2
-	global gen
-	gen = [algo.AlgoGen(noteDur=vari.mainTempo) for i in range(cons.NUMGENS)]
-	genCall = [gen[i].doinIt() for i in range(cons.NUMGENS)]
-	# a2 = [algo.AlgoGen(noteDur=vari.mainTempo/2) for i in range(cons.NUMGENS)]
-	# a3 = [a2[i].doinIt() for i in range(cons.NUMGENS)]
-	# change the time for the next calls here
-	patGens1.time = random.randint(20,50)
-	# patGens2.time = random.randint(20,50)
+def callGen1():
+    global patGens1
+    global timeSynth
+    global gen1
+
+    # change the time for the next calls here
+    timeSynthNew = random.randint(20,50)
+    gen1 = [algo.AlgoGen(noteDur=vari.mainTempo, dur=timeSynthNew) for i in range(cons.NUMGENS)]
+    genCall = [gen1[i].doinIt() for i in range(cons.NUMGENS)]
+    patGens1.time = timeSynthNew
+    timeSynth = timeSynthNew
+
+def callGen2():
+    global patGens2
+    global timeSynth
+    global gen2
+
+    # change the time for the next calls here
+    timeSynthNew = random.randint(20,50)
+    gen2 = [algo.AlgoGen(noteDur=vari.mainTempo/2., dur=timeSynthNew) for i in range(cons.NUMGENS)]
+    genCall = [gen2[i].doinIt() for i in range(cons.NUMGENS)]
+    patGens2.time = timeSynthNew
+    timeSynth = timeSynthNew
+
+
+    
 
 
 # to play sound objects
 samp=None
+timeSamp = 15
 
 def callSamp():
-	global patSamp1
-	global patSamp2
-	global samp
-	samp = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]
-	# sampCall = [samp[i].doinIt() for i in range(cons.NUMSAMPS)]
-	# a2 = [algo.AlgoGen(noteDur=vari.mainTempo/2) for i in range(cons.NUMGENS)]
-	# a3 = [a2[i].doinIt() for i in range(cons.NUMGENS)]
-
-	# change the time for the next calls here
-	patSamp1.time = random.randint(5,15)
-	# patSamp2.time = random.randint(10,20)
+    global patSamp1
+    global samp
+    global timeSamp
+    samp = [algo.AlgoSamp(dur = timeSamp) for i in range(cons.NUMSAMPS)]
 
 
-# to play the sines while the voice is talking
+    # change the time for the next calls here
+    timeSamp = random.randint(5,30)
+    patSamp1.time = timeSamp
+
+
+# to play the sines "twinkles" while the voice is talking
 sine = synt.SineGen()
 
 
 
 # to change the notes for the pads
 def chNotes():
-	notes.newNotes()
-	print 'NOTES'
+    notes.newNotes()
+    print 'NOTES'
 
 
 
-# Actual calling is done here
-patNotes = Pattern(chNotes, 10).play()
-patGens1 = Pattern(callGen, 20).play()
-# patGens2 = Pattern(callGen, 20).play()
-patSamp1 = Pattern(callSamp, 10).play()
-# patSamp2 = Pattern(callSamp, 10).play()
+### Actual calling is done here
+
+# Change notes being played
+patNotes = Pattern(chNotes, timeSynth).play()  # TRYING OUT TIMESYNTH HERE<-----------
+# Plays SynthGens
+patGens1 = Pattern(callGen1, timeSynth).play()
+patGens2 = Pattern(callGen2, timeSynth).play(delay = timeSynth/2.)
+# Plays Samples
+patSamp1 = Pattern(callSamp, timeSamp).play()
+
 
 
 
@@ -94,36 +114,36 @@ signalIn = inte.MidiCCInSnd()
 tr = TrigFunc(midiMet, signalIn.retVal)
 
 def distance():
-	# must be a better way for the variables...
-	filtFreq = vari.currentCCSnd
-	sineMul = vari.currentCCSnd
-	synthMul = vari.currentCCSnd
-	tempo = vari.currentCCSnd
-	mTempo = vari.currentCCSnd
-	# adjusting hipass 
-	if filtFreq < 40:
-		vari.outFiltFreq = util.translate(filtFreq, 0,40, 0, 2000)
-	elif filtFreq >= 40:
-		if filtFreq > 100:
-			filtFreq = 100
-		vari.outFiltFreq = util.translate(filtFreq, 40,100, 2000, 8000)
-	if sineMul < 10:
-		sineMul = 10
-	if sineMul > 85:
-		sineMul = 85
-	vari.sineGenMul = util.translate(sineMul, 10, 85, 0,1)
-	if synthMul < 50:
-		synthMul = 50
-	if synthMul > 100:
-		synthMul = 100
-	vari.synthGenMul = util.translate(synthMul, 50, 100, 1,0.2)
-	vari.sineTempo = util.translate(tempo, 0, 127, 0.7,0.3)
-	if mTempo > 80:
-		mTempo = 80
-	vari.mainTempo = util.translate(mTempo, 0, 80, 1,4)
+    # must be a better way for the variables...
+    filtFreq = vari.currentCCSnd
+    sineMul = vari.currentCCSnd
+    synthMul = vari.currentCCSnd
+    tempo = vari.currentCCSnd
+    mTempo = vari.currentCCSnd
+    # adjusting hipass 
+    if filtFreq < 40:
+        vari.outFiltFreq = util.translate(filtFreq, 0,40, 0, 2000)
+    elif filtFreq >= 40:
+        if filtFreq > 100:
+            filtFreq = 100
+        vari.outFiltFreq = util.translate(filtFreq, 40,100, 2000, 8000)
+    if sineMul < 10:
+        sineMul = 10
+    if sineMul > 85:
+        sineMul = 85
+    vari.sineGenMul = util.translate(sineMul, 10, 85, 0,1)
+    if synthMul < 50:
+        synthMul = 50
+    if synthMul > 100:
+        synthMul = 100
+    vari.synthGenMul = util.translate(synthMul, 50, 100, 1,0.2)
+    vari.sineTempo = util.translate(tempo, 0, 127, 0.7,0.3)
+    if mTempo > 80:
+        mTempo = 80
+    vari.mainTempo = util.translate(mTempo, 0, 80, vari.mainTempoInit,8)
 
 
-pat0 = Pattern(distance,0.1).play(delay=2)
+patMIDI = Pattern(distance,0.1).play(delay=2)
 
     
 

@@ -24,11 +24,10 @@ import random, threading, time
 
 
 class AlgoGen:
-    def __init__(self, notes = [60],dur=30, noteDur=5): 
+    def __init__(self, notes = [60],dur=20, noteDur=5): 
         '''
         This module generates a stream of notes, with a specified root note.
         Duration of this stream is specified in seconds.
-
         '''
         self.notes = notes
         self.dur = dur
@@ -38,8 +37,8 @@ class AlgoGen:
 
         # First, generate a sound
         self.synthNum = random.randint(1,5)  # how many synthGen instances will compose a note
-        print 'algo 1: ', self.synthNum
-        self.a = [synt.SynthGen(envDur = self.noteDur) for i in range(self.synthNum)]
+        # print 'algo 1: ', self.synthNum
+        self.a = [synt.SynthGen(envDur = self.noteDur, dur=self.dur) for i in range(self.synthNum)]
         self.a1 = [self.a[i].getOut() for i in range(self.synthNum)]
 
         #Then applies effects on the list of synths
@@ -47,25 +46,15 @@ class AlgoGen:
 
         sfxNum = random.randint(1,5)
         modulA = random.random()/2
-        print "modulation a: ", modulA
+        # print "modulation a: ", modulA
         self.a2 = effe.Sfxs(self.a1,modu=modulA, numFXs=sfxNum, mult=0.8, rvb=1)
-        print self.a2.getDur()
-        # self.tDown = threading.Thread(target=self.volDown).start()
+        # print self.a2.getDur()
 
-
-    def volDown(self):   # Not in use
-        time.sleep(self.a2.getDur()+2)
-        self.ending()
-
-    def ending(self):  # Not in use, linked to volDown
-        print 'Ending AlgoGen'
-        del self.a,self.a1,self.a2,self.trigA1,self.trigA2,self.trigA3,self.tDown
 
     def doinIt(self,time=10):
         '''
         arg time defines the life duration of the synth line.  Set notes chosen.
         '''
-        self.time = time
         ## Evolves the parameters of the gens
         #For a minimum of variation, selects new random pitch every few seconds.
         #and triggers the notes also every 3 seconds, 65% this script is run.
@@ -98,8 +87,32 @@ class AlgoGen:
 
         #To trigger random notes
     def retrigginRand(self):
-        print 'algo going'
         [self.a[i].repeat() for i in range(self.synthNum)]
+
+    def setNoteDur(self):
+        self.setNDur = [self.a[i].setDur(vari.secTempo) for i in range(self.synthNum)]
+
+
+
+
+
+def setSecTempo():
+    coin = random.random()
+    print "secTempo", coin
+
+    if coin > 0.5:
+        vari.secTempo = vari.mainTempo
+        util.genMet.fill
+    else:
+        vari.secTempo = vari.mainTempo/2
+    secTempoPat.time = vari.secTempo
+    print "secTempo 2", vari.secTempo
+
+secTempoPat = Pattern(setSecTempo,vari.mainTempo).play()
+
+
+
+
 
 
 
@@ -111,7 +124,7 @@ class AlgoSamp:
         '''
 
         # Generates sound from a granulated audio file
-        self.b = samp.GranuleSf()
+        self.b = samp.GranuleSf(mainDur = dur)
         self.b1 = self.b.getOutInit()
 
         modulB = random.random()/10

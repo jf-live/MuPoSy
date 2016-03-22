@@ -10,25 +10,29 @@ import variables as vari
 from pyo import *
 import random
 
-# s=Server().boot()
-
 
 ###Class where the audio signals are generated
 class SynthGen:
-    def __init__(self, freq=400, mod=1, mult=0.2, multMod=1, envDur = 3, wide=False):
+    def __init__(self, freq=400, mod=1, mult=0.2, multMod=1, envDur = 3, dur=20, wide=True):
         '''
         Wide is the parameter that controls if the gen is created for 1 channel,
             or for all channels.  False = 1 channel, True = all channels.
 
         '''
         self.freq = freq    #base frequency
+        self.freq0 = self.freq  # for SigTo(freq...)
         self.mod = mod      #modifier factor
+        self.dur = dur    # duration of the main envelope
         mult = mult*0.8
         self.multMod = multMod  
         self.envDur = envDur    #envelope duration
         self.wide = wide    #If gen is all channels or 1 channel
         self.randChooser = int(random.triangular(0,13, random.randint(0,13)))
         print "wave", self.randChooser
+
+        # affects amplitude according to interactivity input
+        self.patMul = Pattern(self.settingMul,0.05)
+
         #0@5: LFO Saw Up, SawDown, Square, Triangle, Pulse, Bipolar Pulse
         #6: BLIT
         #7: RCOsc
@@ -41,8 +45,9 @@ class SynthGen:
         # Temporary env to generate notes
         # Will need to be augmented to include no-zero envelopes, more 
         #   interesting shapes, etc.
-        
-        if vari.randEnvSynth >= 35:
+
+
+        if vari.randEnvSynth >= 50:
             if self.envDur < 3:
                 self.attackT = random.random()/3
                 self.decayT = random.uniform(0.01,0.5)/3
@@ -56,9 +61,14 @@ class SynthGen:
                 self.dura = self.envDur
             self.env = Adsr(self.attackT, self.decayT, 0.7, self.releaseT, self.dura).play()
         else:
-            self.env = random.uniform(0.3,0.7)
+            self.env = random.uniform(0.5,0.7)
 
 
+        # Global envelope
+        self.globEnv = CosTable([(0,.0),(1000,1.),(7191,1.),(8191,0.)])
+
+
+        # assign randomly a snd gen
         if self.randChooser <= 5:
             self.modifLFO = LFO(random.uniform(0.25,3)*(self.mod+0.001),
                                 0.5,
@@ -242,9 +252,12 @@ class SynthGen:
                                self.modifOscLoopSig, 
                                mult*self.modifMult*self.env)
 
-        self.sigForOut = Clip(self.sig)
+        # applies main amplitude envelope
+        self.mulTableFreq = 1./self.dur
+        self.mulTable = TableRead(self.globEnv,self.mulTableFreq).play()
 
-        self.patMul = Pattern(self.settingMul,0.05)
+        self.sigForOut = Clip(self.sig, mul=self.mulTable)
+
 
     def repeat(self):
         '''
@@ -293,32 +306,36 @@ class SynthGen:
         return self.forGetOut2
 
     def setNewNote(self):
-        print 'new note'
         #Chooses a new note to play right from vari.scaleInUse
         freq = random.choice(vari.scaleInUse)
         if self.randChooser > 8 and self.randChooser <= 10:
-            self.sig.setCarrier(freq)
+            self.sig.setCarrier(SigTo(freq,random.uniform(0.01,0.05),self.freq0))
         else:
-            self.sig.setFreq(freq)
+            self.sig.setFreq(SigTo(freq,random.uniform(0.01,0.05),self.freq0))
+        self.freq0 = freq
 
     def setNewFreq(self,newFreq):
         freq = newFreq
         if self.randChooser > 8 and self.randChooser <= 10:
-            self.sig.setCarrier(freq)
+            self.sig.setCarrier(SigTo(freq,random.uniform(0.01,0.05),self.freq0))
         else:
-            self.sig.setFreq(freq)
+            self.sig.setFreq(SigTo(freq,random.uniform(0.01,0.05),self.freq0))
+        self.freq0 = freq
 
     def setRandom(self, mini=200, maxi=3000):
+        freq = random.randint(mini,maxi)
         if self.randChooser > 8 and self.randChooser <= 10:
-            self.sig.setCarrier(random.randint(mini,maxi))
+            self.sig.setCarrier(SigTo(freq,random.uniform(0.01,0.05),self.freq0))
         else:
-            self.sig.setFreq(random.randint(mini,maxi))
+            self.sig.setFreq(SigTo(freq,random.uniform(0.01,0.05),self.freq0))
+        self.freq0 = freq
 
     def stop(self):
         self.sig.stop()
 
     def settingMul(self):
         self.sigForOut.mul = vari.sineGenMul
+        
 
 
 

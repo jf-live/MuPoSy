@@ -31,7 +31,7 @@
 # IMPORTANT : This script must be run on Mac OS or Linux in order to work.
 #
 # The "translate" function in utilities was taken from Adam Luchjenbroers on 
-# 	http://stackoverflow.com/questions/1969240/mapping-a-range-of-values-to-another
+#   http://stackoverflow.com/questions/1969240/mapping-a-range-of-values-to-another
 #
 ###############################################################################
 ### Seeding is useful to recall 'presets'.
@@ -43,7 +43,7 @@ s = Server(sr = 48000) #, buffersize = 512)
 print pm_list_devices()
 # nanoKontrol is connected here.  See Midi.py for details.
 s.setMidiInputDevice(0)
-s.recordOptions(sampletype = 1) # sets recording to 24bit
+s.recordOptions(fileformat = 1,sampletype = 1) # sets recording to 24bit
 s.boot()
 
 import Resources.utilities as util
@@ -63,7 +63,7 @@ import Resources.Effects as effe
 
 # To track the current number of streams on the server:
 def numStreams():
-	print "streams:",s.getNumberOfStreams()
+    print "streams:",s.getNumberOfStreams()
 pat = Pattern(numStreams,1).play()
 
 

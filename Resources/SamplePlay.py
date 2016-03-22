@@ -14,10 +14,6 @@ import os, random, fnmatch
 from pyo import *
 
 
-# s = Server().boot()
-# s.start()
-
-
 # first load all samples in tables
 allSnds = []
 allSndsTables = []
@@ -35,31 +31,6 @@ def loadObjSono(path=cons.SFFOLDER_PATH):
 loadObjSono()
 
 print "# of loaded samples:", len(allSndsTables)
-
-############################################################# DEPRECATED - START
-# #chooses 1 random file in a given folder, excludes hidden files and folders
-# class RandListDir:
-#     def doIt(self,pathTo):
-#         toChoose = [f for f in os.listdir(pathTo) if f.endswith(".aif") or 
-#                                                      f.endswith(".wav") or 
-#                                                      f.endswith(".aiff")]
-#         toReturn = random.choice(toChoose)
-#         print "Sound loaded", toReturn
-#         return toReturn
-
-#     def doItDeep(self,pathTo):
-#         """
-#         Retourne des fichiers son pour un dossier et sa suite
-#         """
-#         self.toChoose = []
-
-#         for root, dirnames,filenames in os.walk(pathTo):
-#             for filename in fnmatch.filter(filenames, ("*.aif" or "*.wav" or "*.aiff")):
-#                 self.toChoose.append(os.path.join(root,filename))
-#         toReturn = random.choice(self.toChoose)
-#         print "Sound loaded", toReturn
-#         return toReturn
-# ############################################################# DEPRECATED - END
 
 
 
@@ -120,7 +91,7 @@ class GranuleSf:
     Mode 0 is random sound.
     Mode 1 is a specific sound, needs to be specified with fileSel.  NOT IN USE!
     """
-    def __init__(self, mode = 0, path=cons.SFFOLDER_PATH, fileSel=cons.SONTEST, modu=1, dur=1):
+    def __init__(self, mode = 0, path=cons.SFFOLDER_PATH, fileSel=cons.SONTEST, modu=1, dur=1, mainDur = 15):
         print "sample"
         global allSndsTables
         global allSnds
@@ -142,6 +113,9 @@ class GranuleSf:
             self.t.setSound(sFile)   # THIS DOES NOT WORK ANY MORE, CAUSED PROBLEMS WITH LATE LOADING OF SAMPLES
         
         grEnv = HannTable()
+
+        # global envelope
+        self.globEnv = CosTable([(0,.0),(100,1.),(8091,1.),(8191,0.)])
         
         ### Pour obtenir le sampling rate
         sr = grEnv.getServer().getSamplingRate()
@@ -164,7 +138,12 @@ class GranuleSf:
             pit = Randi(min=0.59, max=2.01, freq=3)#+RandInt(20,1)
             self.gr = Granulator(self.snd, grEnv, grains=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
 
-        self.gr2 = Compress(self.gr, -30,300,10, mul = 0.6)
+        # applies main amplitude envelope
+        self.mulTableFreq = 1./dur
+        self.mulTable = TableRead(self.globEnv,self.mulTableFreq).play()
+
+
+        self.gr2 = Compress(self.gr, -30,300,10, mul = 0.6* self.mulTable)
 
     def setEnv(self):  #sets initial attributes for Adsr env
         self.att = random.uniform(0.01,1)
@@ -283,31 +262,8 @@ class GranuleSf:
 
     def chooseNew(self):
         self.gr2.mul = SigTo(0,0.005)
-        # rSound = RandListDir().doItDeep(self.path)
-        # sFile = os.path.join(self.path,rSound)
-        # vari.sampColl.append(sFile)
         selSndIndex = random.randint(0,len(allSndsTables)-1)
         self.snd = allSndsTables[selSndIndex]   # Selects to table to be played
         vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples
         self.gr2.mul = self.noteEnv*0.8
 
-# a = GranuleSf()
-
-# def rep():
-#     a.resetEnv()
-# #   a.out()
-#     a.getOut()
-
-    
-# c = LFO(freq=1,type=6,mul=.5, add=.5)
-# d = SigTo(c, random.uniform(0.01,1))
-
-# pat = Pattern(rep, time=2).play()
-
-# # a = SoundRead(0, speed=2)
-# # b = Freeverb(a.getOut(),.9).out()
-# b = Pan(a.getOut(), 2, pan=d).out()
-
-
-
-# s.gui(locals())

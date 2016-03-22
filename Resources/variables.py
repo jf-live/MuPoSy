@@ -8,8 +8,14 @@
 from pyo import *
 import random
 
-mainTempo = 1  # en seconde
-sineTempo = 1  #
+
+mainTempoInit = random.uniform(0.3,1) # mainTempoInit keeps the slowest possible time
+mainTempo = mainTempoInit #mainTempo is the current tempo, affected by MIDI CC in Engine.py
+secTempo = mainTempo/2.
+sineTempo = 1 #sineTempo is also affected by MIDI CC; is used by sines with Voice
+
+
+
 
 currentCCVoix = 0  # pour transmettre les valeurs CC pour Voix
 currentCCSnd = 0  # pour transmettre les valeurs CC pour Sons
@@ -87,8 +93,6 @@ fx = {  "filter": {
 
 
 # to determine if synthGens are played with closed envelopes, or continuously
-
-
 print "randEnvSynth"
 randEnvSynth = random.randint(0,100)
 print randEnvSynth
