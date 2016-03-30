@@ -37,9 +37,9 @@ class AlgoGen:
 
         # First, generate a sound
         self.synthNum = random.randint(1,5)  # how many synthGen instances will compose a note
-        # print 'algo 1: ', self.synthNum
         self.a = [synt.SynthGen(envDur = self.noteDur, dur=self.dur) for i in range(self.synthNum)]
-        self.a1 = [self.a[i].getOut() for i in range(self.synthNum)]
+        self.a1 = [self.a[i].getOut() for i in range(self.synthNum)]   # TESTING
+        # self.a1 = [self.a[i].out() for i in range(self.synthNum)]   # TESTING
 
         #Then applies effects on the list of synths
         #modul changes the intensity or amount of the effects (between 0 and 1)
@@ -47,7 +47,7 @@ class AlgoGen:
         sfxNum = random.randint(1,5)
         modulA = random.random()/2
         # print "modulation a: ", modulA
-        self.a2 = effe.Sfxs(self.a1,modu=modulA, numFXs=sfxNum, mult=0.8, rvb=1)
+        self.a2 = effe.Sfxs(self.a1,modu=modulA, numFXs=sfxNum, mult=0.8, rvb=1)   # TESTING
         # print self.a2.getDur()
 
 
@@ -95,44 +95,17 @@ class AlgoGen:
 
 
 
-
-def setSecTempo():
-    coin = random.random()
-    print "secTempo", coin
-
-    if coin > 0.5:
-        vari.secTempo = vari.mainTempo
-        util.genMet.fill
-    else:
-        vari.secTempo = vari.mainTempo/2
-    secTempoPat.time = vari.secTempo
-    print "secTempo 2", vari.secTempo
-
-secTempoPat = Pattern(setSecTempo,vari.mainTempo).play()
-
-
-
-
-
-
-
-
 class AlgoSamp:
     def __init__(self, notes = [60],dur=30, noteDur=5): 
         '''
         This module manages the samples being played.
         '''
-
         # Generates sound from a granulated audio file
         self.b = samp.GranuleSf(mainDur = dur)
-        self.b1 = self.b.getOutInit()
-
+        self.b.out()
         modulB = random.random()/10
         print "modulation b: ", modulB
-        self.b2 = effe.Sfxs(self.b1,modu=modulB, numFXs=random.randint(1,4), rvb=1)   # TESTING
-        # Get the duration of the main env
-        # self.bTime = self.b2.getDur()    # TESTING
-        self.patTime = random.randint(1,4)
+
         # Change the samples in the order they were called to prevent calling before
         # playback is done.
 
@@ -144,30 +117,12 @@ class AlgoSamp:
         else:
             self.tFreq = Randh(1,3,randFreq)
             self.trig = Beat(self.tFreq).play()
-            self.patB2 = Pattern(self.beatFill, time=self.patTime).play()
 
         self.patB1 = TrigFunc(self.trig,self.repChoice)
 
-
-    def ending(self):
-        print 'Ending AlgoSamp'
-        del self.b,self.b1,self.b2,self.tDown, self.tFreq, self.trig, self.patB1, self.patB2
-
     def repChoice(self):
-        self.b.mul = SigTo(0,0.05)
-        self.space()
         self.b.chooseNew()
-        self.b1 = self.b.getOutRand(random.uniform(0.001,2))
-
-    def beatFill(self):
-        print "Beat Fill hey"
-        self.trig
-        self.trig.fill()
-
-    def space(self):
-        newVal = random.choice([.02,.1,.3,.5,.8])
-        vari.fxRvbInit = newVal
-
+        return self
 
 
 
@@ -180,7 +135,6 @@ class Notes:
         '''
         self.key = key
         self.scale = scale
-
 
         if self.key == 'Rand':
             self.root = random.choice([60,48,36])
@@ -198,7 +152,6 @@ class Notes:
 
         # add the scale to a list to retrieve later.
         vari.scaleColl.append(self.notes)   
-
 
         self.notes = [x + self.root for x in self.notes]      #adding the root to the notes list
         octaves = [12,-12,-24,-36]

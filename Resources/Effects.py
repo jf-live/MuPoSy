@@ -285,6 +285,7 @@ class Sfxs:
 
     def settings(self):
         speedMod = 1/vari.mainTempo
+        # Filter applied depending on the fader value
         self.outFilt.freq = SigTo(vari.outFiltFreq,0.5)
         self.outFilt.freq = vari.outFiltFreq
         if 0 in self.newFXs:

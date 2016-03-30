@@ -180,15 +180,13 @@ class ReadPoem:
 
     def playVoice(self):
         self.c = samp.SoundRead(1, speed=1, fileSel = vari.poemPath)
-        self.c1 = self.c.getOut()
-        self.c2 = Biquad(self.c1, 800,type=1, mul=1.).out()
+        self.c2 = Biquad(self.c, 800,type=1, mul=1.)
         self.time = random.uniform(0.03,0.2)
         self.randTime = [random.uniform(0.9,1.1)*self.time for i in range(2)]
         self.c3 = Delay(self.c2, self.randTime, 
                                  random.uniform(0.3,0.8), 
                                  mul = 0.9)
         self.c23 = self.c2 + self.c3
-        # self.c4 = Freeverb(self.c23, .5, mul = 0.8, bal = 0.3).out()
         self.c4 = WGVerb(self.c23, random.uniform(0.2,0.7)).out()
         self.done = self.cleanUp()
 

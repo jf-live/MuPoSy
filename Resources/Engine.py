@@ -23,10 +23,6 @@ import random
 from pyo import *
 
 
-
-
-
-
 ####  !!!   Poem audio is completely done in Voix.py   !!!   ####
 
 notes = algo.Notes(key='D')
@@ -65,24 +61,37 @@ def callGen2():
     
 
 
-# to play sound objects
-samp=None
-timeSamp = 15
+### to play sound objects
 
-def callSamp():
+# to keep alive the samples being played
+samp1 = None
+samp2 = None
+# to keep track of the samples playtime
+timeSamp1 = 15
+timeSamp2 = 15
+
+def callSamp1():
     global patSamp1
-    global samp
-    global timeSamp
-    samp = [algo.AlgoSamp(dur = timeSamp) for i in range(cons.NUMSAMPS)]
-
-
+    global samp1
+    global timeSamp1
+    samp1 = [algo.AlgoSamp(dur = timeSamp1) for i in range(cons.NUMSAMPS)]
     # change the time for the next calls here
-    timeSamp = random.randint(5,30)
-    patSamp1.time = timeSamp
+    timeSamp1 = random.randint(5,30)
+    patSamp1.time = timeSamp1
+
+def callSamp2():
+    global patSamp2
+    global samp2
+    global timeSamp2
+    samp2 = [algo.AlgoSamp(dur = timeSamp2) for i in range(cons.NUMSAMPS)]
+    # change the time for the next calls here
+    timeSamp2 = random.randint(5,30)
+    patSamp2.time = timeSamp2
 
 
 # to play the sines "twinkles" while the voice is talking
 sine = synt.SineGen()
+sine.out()
 
 
 
@@ -90,7 +99,6 @@ sine = synt.SineGen()
 def chNotes():
     notes.newNotes()
     print 'NOTES'
-
 
 
 ### Actual calling is done here
@@ -101,14 +109,12 @@ patNotes = Pattern(chNotes, timeSynth).play()  # TRYING OUT TIMESYNTH HERE<-----
 patGens1 = Pattern(callGen1, timeSynth).play()
 patGens2 = Pattern(callGen2, timeSynth).play(delay = timeSynth/2.)
 # Plays Samples
-patSamp1 = Pattern(callSamp, timeSamp).play()
-
-
+patSamp1 = Pattern(callSamp1, timeSamp1).play()
+patSamp2 = Pattern(callSamp2, timeSamp2).play()
 
 
 
 # To retrieve MIDI CC and affect the sound accordingly
-
 midiMet = util.eventMetSnd
 signalIn = inte.MidiCCInSnd()
 tr = TrigFunc(midiMet, signalIn.retVal)
@@ -146,8 +152,5 @@ def distance():
 patMIDI = Pattern(distance,0.1).play(delay=2)
 
     
-
-
-
 
 

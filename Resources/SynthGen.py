@@ -12,8 +12,8 @@ import random
 
 
 ###Class where the audio signals are generated
-class SynthGen:
-    def __init__(self, freq=400, mod=1, mult=0.2, multMod=1, envDur = 3, dur=20, wide=True):
+class SynthGen(Sig):
+    def __init__(self, freq=400, mod=1, mult=0.2, multMod=1, envDur = 3, dur=20, wide=True, mul=1,add=0):
         '''
         Wide is the parameter that controls if the gen is created for 1 channel,
             or for all channels.  False = 1 channel, True = all channels.
@@ -256,7 +256,8 @@ class SynthGen:
         self.mulTableFreq = 1./self.dur
         self.mulTable = TableRead(self.globEnv,self.mulTableFreq).play()
 
-        self.sigForOut = Clip(self.sig, mul=self.mulTable)
+        # self.sigForOut = Clip(self.sig, mul=self.mulTable)
+        Sig.__init__(self, self.sig, mul=self.mulTable*mul, add=add)
 
 
     def repeat(self):
@@ -271,39 +272,42 @@ class SynthGen:
         Generates a new envelope from a walk from the previous one and trigs it.
 
         '''
-        if self.envDur<3:
-            self.attackT += random.random()/3*walk-0.5
-            if self.attackT <= 0.:
-                self.attackT = 0.1
-            self.decayT += random.uniform(-0.2*walk,0.2*walk)/3
-            if self.decayT <= 0.:
-                self.decayT = 0.1
-            self.releaseT += random.random()/3*walk-0.5
-            if self.releaseT <= 0.:
-                self.releaseT = 0.1        
+        if vari.randEnvSynth < 50:
+            pass
         else:
-            self.attackT += random.random()*walk-0.5
-            if self.attackT <= 0.:
-                self.attackT = 0.1
-            self.decayT += random.uniform(-0.2*walk,0.2*walk)
-            if self.decayT <= 0.:
-                self.decayT = 0.1
-            self.releaseT += random.random()*walk-0.5
-            if self.releaseT <= 0.:
-                self.releaseT = 0.1        
-        self.dura = self.attackT + self.decayT + self.releaseT + self.envDur/4
-        if self.dura > self.envDur:
-            self.dura = self.envDur
-        self.env.setAttack(self.attackT)
-        self.env.setDecay(self.decayT)
-        self.env.setRelease(self.releaseT)
-        self.env.setDur(self.dura)
-        self.env.play()
+            if self.envDur<3:
+                self.attackT += random.random()/3*walk-0.5
+                if self.attackT <= 0.:
+                    self.attackT = 0.1
+                self.decayT += random.uniform(-0.2*walk,0.2*walk)/3
+                if self.decayT <= 0.:
+                    self.decayT = 0.1
+                self.releaseT += random.random()/3*walk-0.5
+                if self.releaseT <= 0.:
+                    self.releaseT = 0.1        
+            else:
+                self.attackT += random.random()*walk-0.5
+                if self.attackT <= 0.:
+                    self.attackT = 0.1
+                self.decayT += random.uniform(-0.2*walk,0.2*walk)
+                if self.decayT <= 0.:
+                    self.decayT = 0.1
+                self.releaseT += random.random()*walk-0.5
+                if self.releaseT <= 0.:
+                    self.releaseT = 0.1        
+            self.dura = self.attackT + self.decayT + self.releaseT + self.envDur/4
+            if self.dura > self.envDur:
+                self.dura = self.envDur
+            self.env.setAttack(self.attackT)
+            self.env.setDecay(self.decayT)
+            self.env.setRelease(self.releaseT)
+            self.env.setDur(self.dura)
+            self.env.play()
 
     def getOut(self):
-        self.forGetOut1 = self.sigForOut.mix(cons.NUMOUTS)
-        self.forGetOut2 = Compress(self.forGetOut1,-10,5)
-        return self.forGetOut2
+        self.forGetOut1 = self.sig.mix(cons.NUMOUTS)
+        # self.forGetOut2 = Compress(self.forGetOut1,-10,5)
+        return self.forGetOut1
 
     def setNewNote(self):
         #Chooses a new note to play right from vari.scaleInUse
@@ -341,17 +345,16 @@ class SynthGen:
 
 
 # to be played when the text is spoken
-class SineGen:
-    def __init__(self):
-
+class SineGen(Sig):
+    def __init__(self, mul=1,add=0):
         self.a = Sine(4000, mul=0.05)
         self.b = Pan(self.a, pan = 0.5, mul=0)
         self.c1 = Delay(self.b, random.uniform(0.1,0.3), random.uniform(0.2,0.6))
         self.c2 = sum([self.b + self.c1])
-        self.d = Freeverb(self.c2, 0.8, bal=0.7).out()
+        self.d = Freeverb(self.c2, 0.8, bal=0.7)
         self.patFreq = Pattern(self.newFreq, vari.sineTempo).play()
         self.patMul = Pattern(self.settings,0.05).play()
-
+        Sig.__init__(self, self.d, mul=mul, add=add)
     def newFreq(self):
         self.a.freq = random.randint(3000,16000)
         self.b.pan = random.random()
@@ -360,101 +363,6 @@ class SineGen:
         self.b.mul = vari.sineGenMul
         self.patFreq.time = vari.sineTempo
 
-
-
-
-
-
-
-
-
-#--------------------------------------------------------------------START-OLD
-
-#####Tout ce qui concerne la spacialisation devrait être dans le module "effets"
-
-# ###Class that calls the audio generators from SynthGen() and outputs them
-# class SynthOut:
-#   """This class calls a given number of signal generators. 
-# The attributes are: 
-
-#   numGens: number of signal generators to be created.  By defaul they all share the same root freq.
-#   freq: the root frequency.
-#   envMode: 0 for infinitely held notes, 1 for cycling amp enveloppe
-#   modder: the amount of modulation to be applied, from 0 to 4 (can go higher, but might be a bit too wild)
-#   multi: amplitude multiplier.  Better to keep it low.
-#   multiMod: amplitude multiplier modulator.
-#   maxOuts: number of output channels available
-#   outMode: 0 for signal to all channels, 1 for signal to random channels, 2 for signal moving in circle around channels, 3 for random movements
-#           4 for random movements to specific channels (no splitting the signal between channels)
-
-#   """
-#   def __init__(self, numGens=1, freq = 500, envMode = 0, modder = 0.3, multi = 0.5, 
-#                      multiMod = 0.2, maxOuts = MAXCHANNELS):
-#       self.numberGens = numGens
-#       if envMode == 0:
-#           ###Continuous
-#           self.a = [SynthGen(freq*random.randint(1,3), 
-#                               mod = modder, 
-#                               mult = (multi+(multi*random.uniform(-0.5,0.5)))/numGens, 
-#                               multMod = multiMod) for i in range(numGens)]
-            
-#       elif envMode == 1:
-#           ###Cycling envelope
-#           self.t = LinTable([(0,0), (100,1), (1000,.25), (8191,0)])
-#           self.tRead = Osc(self.t, random.uniform(0.5,2), mul=.25)
-#           self.a = [SynthGen(freq*random.randint(1,3), 
-#                               mod = modder, 
-#                               mult = (multi+(multi*random.uniform(-0.5,0.5)))*self.t, 
-#                               multMod = multiMod) for i in range(numGens)]
-
-#   def getOut(self):
-#       return [self.a[i].getOut() for i in range(self.numberGens)]
-
-#####Tout ce qui concerne la spacialisation devrait être dans le module "effets"
-        # if outMode == 0:
-        #   ###Every signal to all channels
-        #   self.aOut = [self.a[i].out(maxOuts) for i in range(numGens)]
-
-        # elif outMode == 1:
-        #   ###Signal to random channels
-        #   a = random.randint(0,maxOuts-1)
-        #   self.aOut = [self.a[i].out(1,a) for i in range(numGens)]
-
-        # elif outMode == 2:
-        #   ###Signal moving in a circle aroung the channels (currently buggy: click when passing from 1 to 0)
-        #   self.panPhase = [Phasor(random.uniform(0.01, 2), random.random()) for i in range(numGens)]
-        #   self.aOut = [Pan(self.a[i].getOut(), 
-        #                       maxOuts, 
-        #                       self.panPhase[i], 
-        #                       random.uniform(0,.5)).out() for i in range(numGens)]
-
-        # elif outMode == 3:
-        #   ###Signal moving randomly
-        #   self.panSNH = [LFO(random.uniform(0.01, 2), 0.1, 6, .5, .5) for i in range(numGens)]
-        #   self.aOut = [Pan(self.a[i].getOut(), 
-        #                       maxOuts, self.panSNH[i], 
-        #                       random.uniform(0,.5)).out() for i in range(numGens)]
-
-        # elif outMode == 4:
-        #   ###Signal moving randomly
-        #   self.m = Metro(1).play()
-        #   self.trigm = [TrigRandInt(self.m,maxOuts-1) for i in range(numGens)]
-        #   self.testing = TrigFunc(self.m,self.printing)
-        #   self.aOut = [Pan(self.a[i].getOut(), 
-        #                       maxOuts, self.trigm[i], 0).out() for i in range(numGens)]
-
-
-#----------------------------------------------------------------------END-OLD
-
-### 'a' is a list of signal generator instances.  
-###     To retrieve a stream for manipulation, use a[0], a[1], ...
-# a = [SynthGen() for i in range(3)]
-# a1 = [a[i].getOut() for i in range(3)]
-# r = Sine(1,mul=0.5,add=0.5)
-# a2 = Pan(a1, 2, r)
-# b = Freeverb(a2).mix(2).out()
-# b = SynthOut()
-# c = SynthOut()
 
 # s.gui(locals())
 

@@ -77,7 +77,6 @@ genStore = {"osc": [],
 
 genStMain = []
 
-
 # Initiates the reverb space for samples
 fxRvbInit = random.choice([.02,.1,.3,.5,.8])
 
@@ -93,9 +92,8 @@ fx = {  "filter": {
 
 
 # to determine if synthGens are played with closed envelopes, or continuously
-print "randEnvSynth"
 randEnvSynth = random.randint(0,100)
-print randEnvSynth
+
 
 
 

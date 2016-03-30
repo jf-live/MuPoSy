@@ -20,7 +20,6 @@ random.seed(rSeed)
 
 
 # Trigger generators for synthGens
-# genMet = Metro(vari.mainTempo).play()
 genMet = Beat(vari.mainTempo).play()
 genEuc = Euclide(vari.mainTempo, onsets = [8,5],poly=4).play()
 
@@ -31,7 +30,6 @@ eventMetSnd = Metro(0.05).play()
 
 
 changeMet = Metro(vari.mainTempo*4)
-
 
 
 # to map values

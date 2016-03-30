@@ -34,12 +34,24 @@
 #   http://stackoverflow.com/questions/1969240/mapping-a-range-of-values-to-another
 #
 ###############################################################################
+
 ### Seeding is useful to recall 'presets'.
+
+
+################ BREAKING NEWS UPDATE ##################
+#
+# 30/3/2016
+# Although I quite like the Effects.py integrated system, it causes clicks when 
+# called, especially for the samples playback.  For that reason, it is no   
+# longer in use.  SamplePlay.py and SynthGen.py have thus been somewhat 
+# rewritten.
+#
+#
 
 
 from pyo import *
 # Server booted here because it is needed when the resources are loaded
-s = Server(sr = 48000) #, buffersize = 512)
+s = Server(sr = 48000, buffersize = 1024)
 print pm_list_devices()
 # nanoKontrol is connected here.  See Midi.py for details.
 s.setMidiInputDevice(0)
