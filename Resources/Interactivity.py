@@ -17,6 +17,7 @@
 
 from pyo import *
 import variables as vari
+import utilities as util
 
 
 # to get CC for voice, independant as voice stops this when playing
@@ -51,5 +52,49 @@ class OSCIn():
 
     def getVal(self):
         return self.rec.get(identifier = '/depth')
+
+
+
+# To retrieve MIDI CC and affect the sound accordingly
+midiMet = util.eventMetSnd
+signalIn = MidiCCInSnd()
+tr = TrigFunc(midiMet, signalIn.retVal)
+
+# To change the variables according to CC data
+
+def distance():
+    # must be a better way for the variables...
+    filtFreq = vari.currentCCSnd
+    sineMul = vari.currentCCSnd
+    synthMul = vari.currentCCSnd
+    tempo = vari.currentCCSnd
+    mTempo = vari.currentCCSnd
+    # adjusting hipass 
+    if filtFreq < 40:
+        vari.outFiltFreq = util.translate(filtFreq, 0,40, 0, 2000)
+    elif filtFreq >= 40:
+        if filtFreq > 100:
+            filtFreq = 100
+        vari.outFiltFreq = util.translate(filtFreq, 40,100, 2000, 8000)
+    if sineMul < 10:
+        sineMul = 10
+    if sineMul > 85:
+        sineMul = 85
+    vari.sineGenMul = util.translate(sineMul, 10, 85, 0,1)
+    if synthMul < 50:
+        synthMul = 50
+    if synthMul > 100:
+        synthMul = 100
+    vari.synthGenMul.setValue(Scale(Sig(synthMul),10,100,1,0.1,1.5))
+    # vari.synthGenMul = util.translate(synthMul, 10, 80, 1,0.1)
+    vari.sineTempo = util.translate(tempo, 0, 127, 0.7,0.3)
+    if mTempo > 80:
+        mTempo = 80
+    vari.mainTempo = util.translate(mTempo, 0, 80, vari.mainTempoInit,8)
+
+
+patMIDI = Pattern(distance,0.01).play(delay=2)
+
+    
 
 

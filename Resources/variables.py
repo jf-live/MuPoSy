@@ -9,7 +9,7 @@ from pyo import *
 import random
 
 
-mainTempoInit = random.uniform(0.3,1) # mainTempoInit keeps the slowest possible time
+mainTempoInit = random.uniform(0.2,0.7) # mainTempoInit keeps the slowest possible time for a note
 mainTempo = mainTempoInit #mainTempo is the current tempo, affected by MIDI CC in Engine.py
 secTempo = mainTempo/2.
 sineTempo = 1 #sineTempo is also affected by MIDI CC; is used by sines with Voice
@@ -26,7 +26,7 @@ outFiltFreqSig = SigTo(outFiltFreq,0.05)
 
 sineGenMul = 0 # to change the volume of the SineGen, set by CC
 
-synthGenMul = 1 # to change the volume of the SynthGens, set by CC
+synthGenMul = SigTo(1, 0.05) # to change the volume of the SynthGens, set by CC
 
 
 reuse = True # determines if a sequence keeps going, or new parameters should be applied

@@ -26,39 +26,30 @@ from pyo import *
 ####  !!!   Poem audio is completely done in Voix.py   !!!   ####
 
 notes = algo.Notes(key='D')
-
+vari.notesList = notes.getListNotes()
 
 # to play synths
-gen1 = None
-gen2 = None
-timeSynth = 20
 
-def callGen1():
-    global patGens1
-    global timeSynth
-    global gen1
-
-    # change the time for the next calls here
-    timeSynthNew = random.randint(20,50)
-    gen1 = [algo.AlgoGen(noteDur=vari.mainTempo, dur=timeSynthNew) for i in range(cons.NUMGENS)]
-    genCall = [gen1[i].doinIt() for i in range(cons.NUMGENS)]
-    patGens1.time = timeSynthNew
-    timeSynth = timeSynthNew
-
-def callGen2():
-    global patGens2
-    global timeSynth
-    global gen2
-
-    # change the time for the next calls here
-    timeSynthNew = random.randint(20,50)
-    gen2 = [algo.AlgoGen(noteDur=vari.mainTempo/2., dur=timeSynthNew) for i in range(cons.NUMGENS)]
-    genCall = [gen2[i].doinIt() for i in range(cons.NUMGENS)]
-    patGens2.time = timeSynthNew
-    timeSynth = timeSynthNew
+gen1 = algo.AlgoGen(notes = "low", tempo = vari.mainTempo)
+gen2 = algo.AlgoGen(tempo = vari.mainTempo* random.choice([2,0.5,0.25,4]))
+gen3 = algo.AlgoGen(tempo = vari.mainTempo* random.choice([0.05,0.1]), mul = 0.4)
 
 
-    
+# b = effe.Distor(gen1,mul=1)
+# c = effe.Harmon(b,mul=1)
+# d = effe.Filter(c, mul=1)
+# e = effe.Chorused(d)
+f = effe.Panning(gen1)
+# g = effe.Delayer(f)
+# h = effe.Phasered(g)
+# i = Compress(h,-20,ratio = 20)
+i = Compress(f,-20,ratio = 20)
+i.out()
+i2 = Compress(gen2,-20,ratio = 20)
+i2.out()
+i3 = Compress(gen3,-20,ratio = 20)
+i3.out()
+
 
 
 ### to play sound objects
@@ -104,53 +95,11 @@ def chNotes():
 ### Actual calling is done here
 
 # Change notes being played
-patNotes = Pattern(chNotes, timeSynth).play()  # TRYING OUT TIMESYNTH HERE<-----------
-# Plays SynthGens
-patGens1 = Pattern(callGen1, timeSynth).play()
-patGens2 = Pattern(callGen2, timeSynth).play(delay = timeSynth/2.)
+# patNotes = Pattern(chNotes, timeSynth).play()  # TRYING OUT TIMESYNTH HERE<-----------
+
 # Plays Samples
 patSamp1 = Pattern(callSamp1, timeSamp1).play()
 patSamp2 = Pattern(callSamp2, timeSamp2).play()
 
-
-
-# To retrieve MIDI CC and affect the sound accordingly
-midiMet = util.eventMetSnd
-signalIn = inte.MidiCCInSnd()
-tr = TrigFunc(midiMet, signalIn.retVal)
-
-def distance():
-    # must be a better way for the variables...
-    filtFreq = vari.currentCCSnd
-    sineMul = vari.currentCCSnd
-    synthMul = vari.currentCCSnd
-    tempo = vari.currentCCSnd
-    mTempo = vari.currentCCSnd
-    # adjusting hipass 
-    if filtFreq < 40:
-        vari.outFiltFreq = util.translate(filtFreq, 0,40, 0, 2000)
-    elif filtFreq >= 40:
-        if filtFreq > 100:
-            filtFreq = 100
-        vari.outFiltFreq = util.translate(filtFreq, 40,100, 2000, 8000)
-    if sineMul < 10:
-        sineMul = 10
-    if sineMul > 85:
-        sineMul = 85
-    vari.sineGenMul = util.translate(sineMul, 10, 85, 0,1)
-    if synthMul < 50:
-        synthMul = 50
-    if synthMul > 100:
-        synthMul = 100
-    vari.synthGenMul = util.translate(synthMul, 50, 100, 1,0.2)
-    vari.sineTempo = util.translate(tempo, 0, 127, 0.7,0.3)
-    if mTempo > 80:
-        mTempo = 80
-    vari.mainTempo = util.translate(mTempo, 0, 80, vari.mainTempoInit,8)
-
-
-patMIDI = Pattern(distance,0.1).play(delay=2)
-
-    
 
 

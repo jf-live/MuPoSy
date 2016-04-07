@@ -31,7 +31,6 @@ eventMetSnd = Metro(0.05).play()
 
 changeMet = Metro(vari.mainTempo*4)
 
-
 # to map values
 def translate(value, leftMin, leftMax, rightMin, rightMax):
     # Figure out how 'wide' each range is

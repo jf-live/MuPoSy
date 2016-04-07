@@ -49,6 +49,7 @@
 #
 
 
+
 from pyo import *
 # Server booted here because it is needed when the resources are loaded
 s = Server(sr = 48000, buffersize = 1024)

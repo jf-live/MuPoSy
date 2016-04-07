@@ -23,74 +23,55 @@ import random, threading, time
 
 
 
-class AlgoGen:
-    def __init__(self, notes = [60],dur=20, noteDur=5): 
+class AlgoGen(Sig):
+    def __init__(self, notes="normal", tempo = 0.25, mul=1, add=0): 
         '''
         This module generates a stream of notes, with a specified root note.
         Duration of this stream is specified in seconds.
         '''
-        self.notes = notes
-        self.dur = dur
-        self.noteDur = noteDur
-        self.timeUp = 0  # Time to have the amp of the effects chain go to 1
-        self.timeDown = 0  # Time to have the amp of the effects chain go to 0
+        self.tempo = tempo
+        primaryBeat = random.randint(80,100)
+        secondaryBeat = random.randint(10,60)
+        thirdBeat = random.randint(30,60)
 
+        self.beat = Beat(self.tempo,8, 100,10,10).play()
+        self.env = CosTable([(0,.0),(3000,1.),(5191,1.),(8191,0.)])
+        if notes == "normal":
+            self.whatFunc = self.changeNote
+        elif notes == "low":
+            self.whatFunc = self.changeNoteLow
+        self.tfunc = TrigFunc(self.beat, self.whatFunc)
+        self.trig = TrigEnv(self.beat, self.env, self.beat['dur'])
         # First, generate a sound
         self.synthNum = random.randint(1,5)  # how many synthGen instances will compose a note
-        self.a = [synt.SynthGen(envDur = self.noteDur, dur=self.dur) for i in range(self.synthNum)]
-        self.a1 = [self.a[i].getOut() for i in range(self.synthNum)]   # TESTING
-        # self.a1 = [self.a[i].out() for i in range(self.synthNum)]   # TESTING
+        self.a = [synt.SynthGen(mul = self.trig*vari.synthGenMul) for i in range(self.synthNum)]
 
-        #Then applies effects on the list of synths
-        #modul changes the intensity or amount of the effects (between 0 and 1)
+        self.patMul = Pattern(self.settingMul,0.05).play()
 
-        sfxNum = random.randint(1,5)
-        modulA = random.random()/2
-        # print "modulation a: ", modulA
-        self.a2 = effe.Sfxs(self.a1,modu=modulA, numFXs=sfxNum, mult=0.8, rvb=1)   # TESTING
-        # print self.a2.getDur()
+        self.b = [self.a[i] for i in range(self.synthNum)]
 
 
-    def doinIt(self,time=10):
-        '''
-        arg time defines the life duration of the synth line.  Set notes chosen.
-        '''
-        ## Evolves the parameters of the gens
-        #For a minimum of variation, selects new random pitch every few seconds.
-        #and triggers the notes also every 3 seconds, 65% this script is run.
-        # 35% of the time it is a continuous stream of sound
-        if vari.randEnvSynth >= 35:
-            self.trigA1 = [TrigFunc(util.genMet, self.a[i].setNewNote) for i in range(self.synthNum)]
-            self.trigA2 = TrigFunc(util.genMet, self.retriggin)
-        else:
-            #For a minimum of variation, selects new random pitch every few seconds.
-            self.trigA1 = [TrigFunc(util.genMet, self.a[i].setNewNote) for i in range(self.synthNum)]
+        Sig.__init__(self,self.b,mul,add)
 
-        #To trigger set notes, via patA2
-    def retriggin(self):
-        [self.a[i].repeatJit() for i in range(self.synthNum)]
+    def changeNote(self):
+        self.newNote = random.choice(vari.scaleInUse)
+        [self.a[i].setNewFreq(self.newNote) for i in range(self.synthNum)]
+        return self
+    def changeNoteLow(self):
+        self.newNote = random.choice(vari.scaleInUse[0:3])
+        if self.newNote >= 400:
+            self.newNote /= random.choice([8,16])
+        print self.newNote
+        [self.a[i].setNewFreq(self.newNote) for i in range(self.synthNum)]
+        return self
 
+    def changeGen(self):
+        self.a = [synt.SynthGen() for i in range(self.synthNum)]
 
-    def doinItRand(self,time=10):
-        '''
-        arg time defines the life duration of the synth line.  Random freq chosen.
-        '''
-        self.time = time
-
-        #For a minimum of variation, selects new random pitch every 3 seconds.
-        self.patA1 = Pattern([self.a[i].setRandom for i in range(self.synthNum)], time=self.noteDur).play()
-        #and triggers the notes also every 3 seconds, 65% this script is run.
-        # 35% of the time it is a continuous stream of sound
-        if vari.randEnvSynth >= 35:
-            self.patA2 = Pattern(self.retrigginRand, self.noteDur).play()
-        self.end = CallAfter(self.ending,self.time).play()
-
-        #To trigger random notes
-    def retrigginRand(self):
-        [self.a[i].repeat() for i in range(self.synthNum)]
-
-    def setNoteDur(self):
-        self.setNDur = [self.a[i].setDur(vari.secTempo) for i in range(self.synthNum)]
+    def settingMul(self):
+        print "mul"
+        [self.a[i].setMul(vari.synthGenMul) for i in range(self.synthNum)]
+        return self
 
 
 
