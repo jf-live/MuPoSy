@@ -67,6 +67,7 @@ def distance():
     filtFreq = vari.currentCCSnd
     sineMul = vari.currentCCSnd
     synthMul = vari.currentCCSnd
+    sineRev = vari.currentCCSnd
     tempo = vari.currentCCSnd
     mTempo = vari.currentCCSnd
     # adjusting hipass 
@@ -81,11 +82,16 @@ def distance():
     if sineMul > 85:
         sineMul = 85
     vari.sineGenMul = util.translate(sineMul, 10, 85, 0,1)
-    if synthMul < 50:
-        synthMul = 50
+    if synthMul < 10:
+        synthMul = 10
     if synthMul > 100:
         synthMul = 100
     vari.synthGenMul.setValue(Scale(Sig(synthMul),10,100,1,0.1,1.5))
+    if sineRev < 50:
+        sineRev = 50
+    if sineRev > 100:
+        sineRev = 100
+    vari.sineRevMul = rescale(sineRev,50,100,0.8,0.99,1)
     # vari.synthGenMul = util.translate(synthMul, 10, 80, 1,0.1)
     vari.sineTempo = util.translate(tempo, 0, 127, 0.7,0.3)
     if mTempo > 80:

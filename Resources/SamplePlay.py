@@ -10,7 +10,7 @@
 import constants as cons
 import variables as vari
 import utilities as util
-import os, random, fnmatch
+import os, random, fnmatch, time
 from pyo import *
 
 
@@ -83,7 +83,7 @@ class GranuleSf(Sig):
         selSndIndex = random.randint(0,len(allSndsTables)-1)
         self.snd = allSndsTables[selSndIndex]   # Selects to table to be played
         vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples
-
+        self.mulInter = vari.synthGenMul
         # Grain envelope
         grEnv = CosTable([(0,.0),(1000,1.),(7191,1.),(8191,0.)])
 
@@ -118,7 +118,7 @@ class GranuleSf(Sig):
         self.mulTable = TableRead(self.globEnv,self.mulTableFreq).play()
 
         # main amp env is applied here
-        self.gr2 = Compress(self.gr, -30,6,0.05, mul = self.mulTable*0.8)
+        self.gr2 = Compress(self.gr, -30,6,0.05, mul = self.mulTable*0.8*self.mulInter)
 
         # panning stuff
         lfoFreq = random.uniform(0.1,1)
@@ -127,7 +127,7 @@ class GranuleSf(Sig):
         self.pan = SPan(self.gr2, cons.NUMOUTS, self.toPan)
 
         # reverb and out
-        revFeed = random.uniform(0.6,0.9)
+        revFeed = random.uniform(0.2,0.9)
         self.grVerb = WGVerb(self.pan, [revFeed, revFeed*(random.uniform(0.98,1.02))])
         Sig.__init__(self, self.grVerb, mul, add)
 
@@ -146,11 +146,14 @@ class GranuleSf(Sig):
         print self.att, self.dec, self.rel, self.dur
 
     def chooseNew(self):
-        revFeed = random.uniform(0.6,0.9)
+        self.gr.mul = SigTo(0.0,0.005)
+        revFeed = random.uniform(0.2,0.9)
         self.grVerb.feedback = [revFeed, revFeed*(random.uniform(0.98,1.02))]
         selSndIndex = random.randint(0,len(allSndsTables)-1)
         self.snd = allSndsTables[selSndIndex]   # Selects a table to be played
-        vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples
+        # self.gr.setTable(allSndsTables[selSndIndex])   ### CREATES THE BIG NOISE OF INFINITE DEATH !!!!!
+        vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples (not currently in use)
+        self.gr.mul = SigTo(self.noteEnv*0.7,0.005)
         self.noteEnv.play()
 
 

@@ -15,8 +15,6 @@ secTempo = mainTempo/2.
 sineTempo = 1 #sineTempo is also affected by MIDI CC; is used by sines with Voice
 
 
-
-
 currentCCVoix = 0  # pour transmettre les valeurs CC pour Voix
 currentCCSnd = 0  # pour transmettre les valeurs CC pour Sons
 
@@ -25,6 +23,7 @@ outFiltFreq = 0 # used to change the master filter, set by CC
 outFiltFreqSig = SigTo(outFiltFreq,0.05)
 
 sineGenMul = 0 # to change the volume of the SineGen, set by CC
+sineRevMul = 0.8 # to change the amount of reverb feedback of SineGen, set by CC
 
 synthGenMul = SigTo(1, 0.05) # to change the volume of the SynthGens, set by CC
 

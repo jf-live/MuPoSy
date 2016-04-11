@@ -33,7 +33,7 @@
 # The "translate" function in utilities was taken from Adam Luchjenbroers on 
 #   http://stackoverflow.com/questions/1969240/mapping-a-range-of-values-to-another
 #
-###############################################################################
+##############################################################################
 
 ### Seeding is useful to recall 'presets'.
 

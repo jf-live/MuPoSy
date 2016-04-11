@@ -11,78 +11,84 @@ import Effects as effe
 import constants as cons
 
 
+a = [0,1,2,3,4,5,6]
 
-class DistoJF(Sig):
-    def __init__(self, inp, mul=1,add=0):
-        self.inp = inp
-        self.a = Disto(inp, 0.9)
-        Sig.__init__(self, self.a,mul,add)
-    def setInput(self,inp2):
-        self.inp2 = inp2
-        self.a.setInput(self.inp2)
-        return self
+temp = a[2]
 
-class DelayJF(Sig):
-    def __init__(self, inp, mul=0.6,add=0):
-        self.inp = inp
-        self.a = Delay(self.inp, feedback = [0.6,0.61])
-        Sig.__init__(self, self.a,mul,add)
-    def setInput(self,inp2):
-        self.inp2 = inp2
-        self.a.setInput(self.inp2)
-        return self
+print a[-3:]
 
 
+# class DistoJF(Sig):
+#     def __init__(self, inp, mul=1,add=0):
+#         self.inp = inp
+#         self.a = Disto(inp, 0.9)
+#         Sig.__init__(self, self.a,mul,add)
+#     def setInput(self,inp2):
+#         self.inp2 = inp2
+#         self.a.setInput(self.inp2)
+#         return self
 
-
-
-
-freqMod = Sine(1).range(300,1000)
-a1 = Sine(freqMod,mul=0.2)
-a2 = Sine(mul = 0.2)
-
-b = effe.Distor(a1,mul=0.4)
-
-c = effe.Harmon(b,mul=0.4)
-
-d = effe.Filter(c, mul=0.5)
-
-e = effe.Chorused(d)
-
-f = effe.Panning(e)
-
-g = effe.Delayer(f)
-
-h = effe.Phasered(g)
-
-i = Compress(h,-40,ratio = 20)
-i.out()
-
-
-# print "streams:",s.getNumberOfStreams()
+# class DelayJF(Sig):
+#     def __init__(self, inp, mul=0.6,add=0):
+#         self.inp = inp
+#         self.a = Delay(self.inp, feedback = [0.6,0.61])
+#         Sig.__init__(self, self.a,mul,add)
+#     def setInput(self,inp2):
+#         self.inp2 = inp2
+#         self.a.setInput(self.inp2)
+#         return self
 
 
 
 
-def whatIsOn():
-    global a1, a2, b,c,d,e,f,g,h
-    slots = [a1,b,c,d,e,f,g,h]
-    onOff = [b.isPlaying(),c.isPlaying(),d.isPlaying(),e.isPlaying(),f.isPlaying(),g.isPlaying(),h.isPlaying()]
-
-    try:
-        t = [i for i, x in enumerate(onOff) if x == False]
-    except:
-        pass
-
-    if t != test:
-        test = t
 
 
-        for i in t:
-            if len(t) == 1:
-                slots[t[0]+2].setInput(slots[t[0]])
+# freqMod = Sine(1).range(300,1000)
+# a1 = Sine(freqMod,mul=0.2)
+# a2 = Sine(mul = 0.2)
 
-        # if t[-1]-t[-2]
+# b = effe.Distor(a1,mul=0.4)
+
+# c = effe.Harmon(b,mul=0.4)
+
+# d = effe.Filter(c, mul=0.5)
+
+# e = effe.Chorused(d)
+
+# f = effe.Panning(e)
+
+# g = effe.Delayer(f)
+
+# h = effe.Phasered(g)
+
+# i = Compress(h,-40,ratio = 20)
+# i.out()
+
+
+# # print "streams:",s.getNumberOfStreams()
+
+
+
+
+# def whatIsOn():
+#     global a1, a2, b,c,d,e,f,g,h
+#     slots = [a1,b,c,d,e,f,g,h]
+#     onOff = [b.isPlaying(),c.isPlaying(),d.isPlaying(),e.isPlaying(),f.isPlaying(),g.isPlaying(),h.isPlaying()]
+
+#     try:
+#         t = [i for i, x in enumerate(onOff) if x == False]
+#     except:
+#         pass
+
+#     if t != test:
+#         test = t
+
+
+#         for i in t:
+#             if len(t) == 1:
+#                 slots[t[0]+2].setInput(slots[t[0]])
+
+#         # if t[-1]-t[-2]
 
 
 
