@@ -32,16 +32,17 @@ vari.notesList = notes.getListNotes()
 
 gen1 = algo.AlgoGen(notes = "low", 
                     tempo = vari.mainTempo* random.choice([2,4]), 
-                    side = "mid")
+                    side = "mid",
+                    mul = 0.05)
 # gen2 = algo.AlgoGen(tempo = vari.mainTempo* random.choice([.2,.4]))
 gen3 = algo.AlgoGen(notes = "loop",
                     tempo = vari.mainTempo* 0.125, 
                     side = "left",
-                    mul = 0.4)
+                    mul = 0.05)
 gen4 = algo.AlgoGen(notes = "loop",
                     tempo = vari.mainTempo* random.choice([0.125,0.25]), 
                     side = "right", 
-                    mul = 0.4)
+                    mul = 0.05)
 
 
 # b = effe.Distor(gen1,mul=1)
@@ -49,7 +50,7 @@ gen4 = algo.AlgoGen(notes = "loop",
 # d = effe.Filter(c, mul=1)
 # e = effe.Chorused(d)
 # f = effe.Panning(gen1)
-# g = effe.Delayer(f)
+# g = effe.Delayer(g)
 # h = effe.Phasered(g)
 # i = Compress(h,-20,ratio = 20)
 # i = Compress(f,-20,ratio = 20)
@@ -65,54 +66,24 @@ i4.out()
 
 
 
-### to play sound objects
-
-# to keep alive the samples being played
-samp1 = None
-samp2 = None
-# to keep track of the samples playtime
-timeSamp1 = 15
-timeSamp2 = 15
-
-def callSamp1():
-    global patSamp1
-    global samp1
-    global timeSamp1
-    samp1 = [algo.AlgoSamp(dur = timeSamp1) for i in range(cons.NUMSAMPS)]
-    # change the time for the next calls here
-    timeSamp1 = random.randint(5,30)
-    patSamp1.time = timeSamp1
-
-def callSamp2():
-    global patSamp2
-    global samp2
-    global timeSamp2
-    samp2 = [algo.AlgoSamp(dur = timeSamp2) for i in range(cons.NUMSAMPS)]
-    # change the time for the next calls here
-    timeSamp2 = random.randint(5,30)
-    patSamp2.time = timeSamp2
-
-
 # to play the sines "twinkles" while the voice is talking
 sine = synt.SineGen()
 sine.out()
 
 
+### to play sound objects
+
+samp1 = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]
+samp2 = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]
 
 # to change the notes for the pads
 def chNotes():
     notes.newNotes()
     print 'NOTES'
 
+noteUpdate = Pattern(chNotes, 10).play()
 
-### Actual calling is done here
 
-# Change notes being played
-# patNotes = Pattern(chNotes, timeSynth).play()  # TRYING OUT TIMESYNTH HERE<-----------
-
-# Plays Samples
-patSamp1 = Pattern(callSamp1, timeSamp1).play()
-patSamp2 = Pattern(callSamp2, timeSamp2).play()
 
 
 

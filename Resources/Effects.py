@@ -34,8 +34,9 @@ class Distor(Sig):
 
 
 class Harmon(Sig):
-    def __init__(self, inp, intense=1,  mul = 1, add = 0):
+    def __init__(self, inp, intense=1,  mix = 0.5, mul = 1, add = 0):
         self.inp = inp
+        self.mix = mix
         tranList = [0,7,12,-5,-12,-24]
         randRange = cons.NUMOUTS+random.randint(3,6)
         coin1 = random.randint(0,1)
@@ -50,9 +51,9 @@ class Harmon(Sig):
             self.lfoFreq = random.uniform(0.1,7*intense)
         vibInt = random.random()
         self.vibHarm = LFO(self.lfoFreq, type=random.randint(0,6), mul=1*vibInt)
-        self.sigTran = Harmonizer(self.inp,self.tran+self.vibHarm, mul=0.9)
-        intenseDry = random.triangular(0,.9,0.5)
-        self.sig1 = [self.inp[i] * intenseDry for i in range(len(self.inp))] + self.sigTran * intense
+        self.sigTran = Harmonizer(self.inp,self.tran+self.vibHarm, mul=0.9 * self.mix)
+        self.intDry = rescale(self.mix,0,1,1,0)
+        self.sig1 = [self.inp[i] * self.intDry for i in range(len(self.inp))] + self.sigTran * intense
         self.sig2 = self.sig1.mix(cons.NUMOUTS)
         Sig.__init__(self, self.sig2,mul,add)
     def setInput(self,inp2):
@@ -157,6 +158,7 @@ class Panning(Sig):
 class Delayer(Sig):
     def __init__(self, inp, intense=1, mul = 1, add = 0):
         self.inp = inp
+        self.intense = intense
         coin1 = random.randint(0,1)
         if coin1 == 0:
             coin2 = random.randint(0,1)
@@ -168,14 +170,28 @@ class Delayer(Sig):
             self.delay = delLfo*random.triangular(0,0.5,0.01) 
         else:
             self.delay = random.uniform(0.005,0.5)
-        feed = random.triangular(0.1,0.6,0.3)
-        self.sig1 = Delay(self.inp, self.delay*intense, feed*intense, mul=0.7)
+        self.feed = random.triangular(0.1,0.6,0.3)
+        self.sig1 = Delay(self.inp, self.delay*intense, self.feed*intense, mul=0.7)
         self.sig2 = self.sig1.mix(cons.NUMOUTS)
         self.sig3 = self.sig2 + self.inp
         Sig.__init__(self, self.sig3,mul,add)
     def setInput(self,inp2):
         self.inp2 = inp2
         self.sig1.setInput(self.inp2)
+        return self
+    def setTimeFb(self):
+        coin = random.randint(0,1)
+        if coin == 0:
+            coin2 = random.randint(0,1)
+            if len(self.inp) > 1 or coin2 == 0:
+                self.lfoDelFreq = [random.uniform(0.01,0.5*self.intense) for i in range(cons.NUMOUTS)]
+            else: 
+                self.lfoDelFreq = random.uniform(0.01,0.5*self.intense)
+            delLfo = LFO(self.lfoDelFreq, type=random.randint(0,6)).range(0.01,0.2)
+            self.sig1.delay = delLfo*random.triangular(0,0.5,0.01) 
+        else:
+            self.sig1.delay = random.uniform(0.005,0.5)
+        self.sig1.feedback = random.triangular(0.1,0.6,0.3)
         return self
 
 

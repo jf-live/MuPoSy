@@ -9,7 +9,6 @@
 # Algorithmic engine
 
 
-
 from pyo import *
 import utilities as util
 import constants as cons
@@ -62,7 +61,7 @@ class MelMaker:
 
 
 class AlgoGen(Sig):
-    def __init__(self, notes="normal", tempo = 0.25, mul=1, add=0): 
+    def __init__(self, notes="normal", tempo = 0.25, side= "mid", mul=1, add=0): 
         '''
         This module generates a stream of notes, with a specified root note.
         Duration of this stream is specified in seconds.
@@ -93,16 +92,20 @@ class AlgoGen(Sig):
         # if this instance is a "normal" note stream or a bass ("low") note stream
         if notes == "normal":
             self.whatFunc = self.changeNote
+            self.inst = "normal"
         elif notes == "low":
             self.whatFunc = self.changeNoteLow
+            self.inst = "low"
         elif notes == "loop":
             self.whatFunc = self.loopMel
+            self.inst = "normal"
+
 
         self.tfunc = TrigFunc(self.beat, self.whatFunc)
-        self.trig = TrigEnv(self.beat, self.env, self.beat['dur'])
+        self.trigEnv = TrigEnv(self.beat, self.env, self.beat['dur'])
 
         self.synthNum = random.randint(1,5)  # how many synthGen instances will compose a note
-        self.a = [synt.SynthGen(mul = self.trig*vari.synthGenMul) for i in range(self.synthNum)]
+        self.a = [synt.SynthGen(inst=self.inst,side=side,mul=self.trigEnv*vari.synthGenMul) for i in range(self.synthNum)]
         self.forOut = sum(self.a)
         Sig.__init__(self,self.forOut,[mul,mul],add)
 
@@ -113,17 +116,20 @@ class AlgoGen(Sig):
             self.newNote = random.choice(vari.scaleInUse[-4:])
             [self.a[i].setNewFreq(self.newNote) for i in range(self.synthNum)]
         return self
+
     def changeNoteLow(self):
         # plays random bass notes in key
         self.newNote = random.choice(vari.scaleInUse[0:3])
         if self.newNote >= 400:
             self.newNote /= random.choice([8,16])
-        print self.newNote
         [self.a[i].setNewFreq(self.newNote) for i in range(self.synthNum)]
         return self
+
     def changeGen(self):
         # generates a new synthGen
         self.a = [synt.SynthGen() for i in range(self.synthNum)]
+        return self
+
     def changeMel(self):
         # changed the looped melody being played
         prevMel = self.currentMel
@@ -138,6 +144,8 @@ class AlgoGen(Sig):
                 pick = random.randint(0,len(self.mel)-1)
                 self.currentMel = self.mel[pick]
             self.melRepCount = 0
+        return self
+
     def loopMel(self, coin2 = 0):
         # plays the looped melody
         if self.melStep < len(self.currentMel):
@@ -163,39 +171,18 @@ class AlgoGen(Sig):
         else:
             [self.a[i].setNewFreq(self.currentMel[0]) for i in range(self.synthNum)]
             self.melStep = 0
+        return self
 
 
 
 class AlgoSamp:
-    def __init__(self, notes = [60],dur=30, noteDur=5): 
+    def __init__(self, notes=[60], mainDur=15): 
         '''
         This module manages the samples being played.
+        THIS IS NOW ALL DONE INSIDE samp.GranuleSf()
         '''
-        # Generates sound from a granulated audio file
-        self.b = samp.GranuleSf(mainDur = dur)
-        self.b.out()
-        modulB = random.random()/10
-        print "modulation b: ", modulB
-
-        # Change the samples in the order they were called to prevent calling before
-        # playback is done.
-
-        coin = random.random()
-        randFreq = random.randint(3,20)
-        if coin >0.5:
-            self.tFreq = Randi(0.1,2,randFreq)
-            self.trig = Cloud(self.tFreq).play()
-        else:
-            self.tFreq = Randh(1,3,randFreq)
-            self.trig = Beat(self.tFreq).play()
-
-        self.patB1 = TrigFunc(self.trig,self.repChoice)
-
-    def repChoice(self):
-        self.b.chooseNew()
-        return self
-
-
+        self.grSamp = samp.GranuleSf(mainDur = mainDur)
+        self.grSamp.out()
 
 
 

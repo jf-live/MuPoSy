@@ -33,7 +33,7 @@
 # The "translate" function in utilities was taken from Adam Luchjenbroers on 
 #   http://stackoverflow.com/questions/1969240/mapping-a-range-of-values-to-another
 #
-##############################################################################
+################################################################################
 
 ### Seeding is useful to recall 'presets'.
 
@@ -48,6 +48,12 @@
 #
 #
 
+
+######## TODO:  SETUP AND/OR FIX FILTER FREQ FOR FADER INTERACTION
+########        WORK ON MEL
+########        FIGURE OUT THE FX CHAIN PROBLEM
+########        FIX THE CHANGE OF KEY FOR NOTES (NOT WORKING AT THIS TIME)
+########    IF TIME LEFT: SETUP TIME CHANGE FOR MEL
 
 
 from pyo import *

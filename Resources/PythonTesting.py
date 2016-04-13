@@ -11,11 +11,12 @@ import Effects as effe
 import constants as cons
 
 
-a = [0,1,2,3,4,5,6]
-
-temp = a[2]
-
-print a[-3:]
+s.start()
+snd = SndTable(SNDS_PATH + "/transparent.aif")
+env = HannTable()
+pos = Phasor(snd.getRate()*.25, 0, snd.getSize())
+dur = Noise(.001, .1)
+g = Granulator(snd, env, [1, 1.001], pos, dur, 24, mul=.1).out()
 
 
 # class DistoJF(Sig):

@@ -13,7 +13,7 @@ import random
 
 ###Class where the audio signals are generated
 class SynthGen(Sig):
-    def __init__(self, freq=400, mod=1, multMod=1, wide=True, side = "mid", mul=1,add=0):
+    def __init__(self, freq=400, mod=1, multMod=1, wide=True, inst = "normal", side = "mid", mul=1,add=0):
         '''
         Wide is the parameter that controls if the gen is created for 1 channel,
             or for all channels.  False = 1 channel, True = all channels.
@@ -25,7 +25,10 @@ class SynthGen(Sig):
         self.multMod = multMod  
         self.mulInter = vari.synthGenMul
         self.wide = wide    #If gen is all channels or 1 channel
-        self.randChooser = int(random.triangular(0,13, random.randint(0,13)))
+        if inst == "normal":
+            self.randChooser = int(random.triangular(0,13, random.randint(0,13)))
+        elif inst == "low":
+            self.randChooser = int(random.triangular(0,5, random.randint(0,5)))
 
         #0@5: LFO Saw Up, SawDown, Square, Triangle, Pulse, Bipolar Pulse
         #6: BLIT
@@ -219,18 +222,18 @@ class SynthGen(Sig):
                                self.freq, 
                                self.modifOscLoopSig, self.modifMult*self.mulInter)
 
-        self.sigForPan = Clip(self.sig)
+        self.sigForPan = Clip(self.sig, mul = 0.8)
         self.forPan = Sine(random.uniform(0.1,1), phase = random.random())
         if side == "left":
-            self.forPan.mul = 0.4
-            self.forPan.add = 0
+            self.forPan.mul = 0.1
+            self.forPan.add = 0.1
         elif side == "mid":
             self.forPan.mul = 0.5
             self.forPan.add = 0.5
         elif side == "right":
-            self.forPan.mul = 0.4
-            self.forPan.add = 0.6            
-        self.sigPanned = Pan(self.sigForPan,outs=cons.NUMOUTS, pan=self.forPan)
+            self.forPan.mul = 0.1
+            self.forPan.add = 0.9          
+        self.sigPanned = Pan(self.sigForPan,outs=cons.NUMOUTS, pan=self.forPan, spread = 0.1)
         self.sigForOut = self.sigPanned.mix(cons.NUMOUTS)
 
         Sig.__init__(self, self.sigForOut, mul=mul, add=add)

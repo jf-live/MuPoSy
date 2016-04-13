@@ -10,6 +10,7 @@
 import constants as cons
 import variables as vari
 import utilities as util
+import Effects as effe
 import os, random, fnmatch, time
 from pyo import *
 
@@ -70,68 +71,21 @@ class SoundRead(Sig):
 class GranuleSf(Sig):
     """
     This class is to granulate a sound.
-    Mode 0 is random sound.
-    Mode 1 is a specific sound, needs to be specified with fileSel.  NOT IN USE!
     """
-    def __init__(self, path=cons.SFFOLDER_PATH, modu=1, dur=1, mainDur = 15, mul=1,add=0):
+    def __init__(self, path=cons.SFFOLDER_PATH, dur=1, mainDur = 15, mul=1,add=0):
         print "sample"
         global allSndsTables
         global allSnds
         self.path = path
-        randSel = random.random() # Chooses if Granule or Granulator is used
-        self.snd = None
         selSndIndex = random.randint(0,len(allSndsTables)-1)
-        self.snd = allSndsTables[selSndIndex]   # Selects to table to be played
+        self.snd = allSndsTables[selSndIndex]   # Selects to table to be played at init
         vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples
-        self.mulInter = vari.synthGenMul
+        self.mulInter = vari.synthGenMul  # fades according to interaction input
+
         # Grain envelope
         grEnv = CosTable([(0,.0),(1000,1.),(7191,1.),(8191,0.)])
 
-        # global envelope
-        globEnvRaise = random.randint(2000,4000)
-        globEnvFall = random.randint(4100,6000)
-        self.globEnv = CosTable([(0,.0),(globEnvRaise,1.),(globEnvFall,1.),(8191,0.)])
-        
-        ### Pour obtenir le sampling rate
-        sr = grEnv.getServer().getSamplingRate()
-
-        end = self.snd.getSize()
-
         # sets initial envelope and creates an Adsr with the values
-        self.setEnv()
-        self.noteEnv = Adsr(self.att, self.dec, self.sus, self.rel, dur = self.dur)
-
-        if randSel >= 0.5:
-            self.pos = Xnoise(freq=10, mul=end)
-            dns = Randi(min=20, max=30, freq=3)
-            pit = Randi(min=0.59, max=2.01, freq=100)#+RandInt(20,1)
-            self.gr = Granule(self.snd, grEnv, dens=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
-
-        else:
-            self.pos = Phasor(self.snd.getRate()*random.uniform(0.01,0.5), 0, self.snd.getSize())
-            dns = random.randint(10, 30)
-            pit = Randi(min=0.59, max=2.01, freq=3)#+RandInt(20,1)
-            self.gr = Granulator(self.snd, grEnv, grains=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
-
-        # applies main amplitude envelope
-        self.mulTableFreq = 1./mainDur
-        self.mulTable = TableRead(self.globEnv,self.mulTableFreq).play()
-
-        # main amp env is applied here
-        self.gr2 = Compress(self.gr, -30,6,0.05, mul = self.mulTable*0.8*self.mulInter)
-
-        # panning stuff
-        lfoFreq = random.uniform(0.1,1)
-        self.lfoPan = LFO(freq=lfoFreq,type=random.randint(0,7),mul=.5, add=.5)
-        self.toPan = SigTo(self.lfoPan, random.uniform(0.01,1))
-        self.pan = SPan(self.gr2, cons.NUMOUTS, self.toPan)
-
-        # reverb and out
-        revFeed = random.uniform(0.2,0.9)
-        self.grVerb = WGVerb(self.pan, [revFeed, revFeed*(random.uniform(0.98,1.02))])
-        Sig.__init__(self, self.grVerb, mul, add)
-
-    def setEnv(self):  #sets initial attributes for Adsr env
         self.att = random.uniform(0.01,1)
         if self.att > 0.5:
             self.dec = random.uniform(0.01,0.5)
@@ -143,19 +97,94 @@ class GranuleSf(Sig):
         else:
             self.rel = random.uniform(0.01,1)
         self.dur = (self.att+self.dec+self.rel)+random.uniform(0.01, 0.5)
-        print self.att, self.dec, self.rel, self.dur
+        self.noteEnv = Adsr(self.att, self.dec, self.sus, self.rel, dur = self.dur)
+
+        randSel = random.random() # Chooses if Granule or Granulator is used
+        if randSel >= 0.5:
+            end = self.snd.getSize()
+            self.pos = Xnoise(freq=10, mul=end)
+            dns = Randi(min=20, max=30, freq=3)
+            pit = Randi(min=0.59, max=2.01, freq=Randi(0.5,4,3))
+            self.gr = Granule(self.snd, grEnv, dens=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
+
+        else:
+            self.pos = Phasor(self.snd.getRate()*random.uniform(0.01,0.5), 0, self.snd.getSize())
+            dns = random.randint(10, 30)
+            pit = Randi(min=0.59, max=2.01, freq=Randi(0.5,4,3))
+            self.gr = Granulator(self.snd, grEnv, grains=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
+
+        self.grClip = Clip(self.gr)
+        self.gr2 = Compress(self.grClip, -30,6,0.05, mul = 0.8*self.mulInter)
+        self.gr3 = effe.Harmon(self.gr2,mix = 0.5)
+        self.gr4 = effe.Delayer(self.gr3)
+        self.gr5 = Biquad(self.gr4, 20, type = 1)
+
+        # panning stuff
+        lfoFreq = random.uniform(0.1,1)
+        self.lfoPan = LFO(freq=lfoFreq,type=random.randint(0,7),mul=.5, add=.5)
+        self.toPan = SigTo(self.lfoPan, random.uniform(0.01,1))
+        self.pan = SPan(self.gr5, cons.NUMOUTS, self.toPan)
+
+        # reverb and out
+        revFeed = random.uniform(0.5,0.9)
+        self.grVerb = WGVerb(self.pan, [revFeed, revFeed*(random.uniform(0.98,1.02))])
+        Sig.__init__(self, self.grVerb, mul, add)
+
+        self.pat = Pattern(self.chooseNew,self.dur + random.uniform(2,4)).play(delay = random.uniform(1,3))
+
+    def setFilt(self):
+
+        self.gr5.freq = rescale(vari.)
+        return self
+
+    def setEnv(self):  
+        self.att = random.uniform(0.01,1)
+        if self.att > 0.5:
+            self.dec = random.uniform(0.01,0.5)
+        else:
+            self.dec = random.uniform(0.01,1)
+        self.sus = random.uniform(0.5,0.95)
+        if self.att + self.dec > 0.5:
+            self.rel = random.uniform(0.01,0.5)
+        else:
+            self.rel = random.uniform(0.01,1)
+        self.dur = (self.att+self.dec+self.rel)+random.uniform(0.1, 6)
 
     def chooseNew(self):
-        self.gr.mul = SigTo(0.0,0.005)
-        revFeed = random.uniform(0.2,0.9)
-        self.grVerb.feedback = [revFeed, revFeed*(random.uniform(0.98,1.02))]
+        self.gr.mul = SigTo(0.0,0.05)
+        self.gr3.mix = random.random()
+        # changes the reverb fb once in a while
+        coinRev = random.random()
+        if coinRev > 0.8: 
+            revFeed = random.uniform(0.5,0.9)
+            self.grVerb.feedback = [revFeed, revFeed*(random.uniform(0.98,1.02))]
         selSndIndex = random.randint(0,len(allSndsTables)-1)
-        self.snd = allSndsTables[selSndIndex]   # Selects a table to be played
-        # self.gr.setTable(allSndsTables[selSndIndex])   ### CREATES THE BIG NOISE OF INFINITE DEATH !!!!!
-        vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples (not currently in use)
-        self.gr.mul = SigTo(self.noteEnv*0.7,0.005)
+        # 20% of the time, a previous sample is repeated
+        coinSamp = random.random()
+        if coinSamp > 0.2:
+            # makes sure all the samples are played once before repeating
+            if len(vari.sampColl) != len(allSnds):
+                selSndIndex = random.randint(0,len(allSndsTables)-1)
+                while allSnds[selSndIndex] in vari.sampColl:
+                    selSndIndex = random.randint(0,len(allSndsTables)-1)
+            else:
+                vari.sampColl = []
+                selSndIndex = random.randint(0,len(allSndsTables)-1)
+            self.gr.setTable(allSndsTables[selSndIndex])   ### CREATES THE BIG NOISE OF INFINITE DEATH (sometimes) !!!!!
+            vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples
+        # changes the position pointer type
+        coinPos = random.random()
+        if coinPos > 0.2:
+            self.gr.pos = Xnoise(freq=10, mul=allSndsTables[selSndIndex][0].getSize())
+        else:
+            self.gr.pos = Phasor(allSndsTables[selSndIndex][0].getRate()*random.uniform(0.01,0.5), 
+                                 0, 
+                                 allSndsTables[selSndIndex][0].getSize())
+        self.gr.mul = SigTo(self.noteEnv*0.7,0.05)
+        self.gr4.setTimeFb()
+        self.pat.time = self.dur + random.uniform(2,4)
+        self.setEnv()
         self.noteEnv.play()
-
 
 
 
