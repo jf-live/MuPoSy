@@ -132,10 +132,10 @@ class GranuleSf(Sig):
 
         self.pat = Pattern(self.chooseNew,self.dur + random.uniform(2,4)).play(delay = random.uniform(1,3))
 
-    def setFilt(self):
+    # def setFilt(self):
 
-        self.gr5.freq = rescale(vari.)
-        return self
+    #     self.gr5.freq = rescale(vari.)
+    #     return self
 
     def setEnv(self):  
         self.att = random.uniform(0.01,1)

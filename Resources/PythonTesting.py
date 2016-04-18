@@ -5,18 +5,35 @@
 # This script file is to be filed under the Resources directory of the MuPoSy
 # project.
 from pyo import *
-s=Server().boot()
+# s=Server().boot()
 import random, os, thread
-import Effects as effe
+# import Effects as effe
 import constants as cons
 
 
-s.start()
-snd = SndTable(SNDS_PATH + "/transparent.aif")
-env = HannTable()
-pos = Phasor(snd.getRate()*.25, 0, snd.getSize())
-dur = Noise(.001, .1)
-g = Granulator(snd, env, [1, 1.001], pos, dur, 24, mul=.1).out()
+# s.start()
+# snd = SndTable(SNDS_PATH + "/transparent.aif")
+# env = HannTable()
+# pos = Phasor(snd.getRate()*.25, 0, snd.getSize())
+# dur = Noise(.001, .1)
+# g = Granulator(snd, env, [1, 1.001], pos, dur, 24, mul=.1).out()
+
+numFXs = 2
+origFXs = []
+origFXs = random.sample([0,1,2,3,4,5,6],numFXs)
+
+###FX order sorting
+### Disto always 1st, then harmon, filter or phaser, 
+###     then chorus or panning, then delay.
+
+
+a = [2,3,3,4,5]
+
+for i in range(5):
+    if i == len(a)-1:
+        print "tututut"
+    print a[i]
+
 
 
 # class DistoJF(Sig):
@@ -104,4 +121,4 @@ g = Granulator(snd, env, [1, 1.001], pos, dur, 24, mul=.1).out()
 # pat = Pattern(whatIsOn, 0.5).play()
 
 
-s.gui(locals())
+# s.gui(locals())

@@ -20,12 +20,13 @@ currentCCSnd = 0  # pour transmettre les valeurs CC pour Sons
 
 
 outFiltFreq = 0 # used to change the master filter, set by CC
-outFiltFreqSig = SigTo(outFiltFreq,0.05)
+outFiltFreqSig = SigTo(outFiltFreq,0.05)    ############# TO BE FIXED
 
 sineGenMul = 0 # to change the volume of the SineGen, set by CC
 sineRevMul = 0.8 # to change the amount of reverb feedback of SineGen, set by CC
 
 synthGenMul = SigTo(1, 0.05) # to change the volume of the SynthGens, set by CC
+
 
 
 reuse = True # determines if a sequence keeps going, or new parameters should be applied

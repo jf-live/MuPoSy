@@ -5,6 +5,8 @@
 # This script file is to be filed under the Resources directory of the MuPoSy
 # project.
 
+### When adding new effects, update FxMixer's sections accordingly
+
 import constants as cons
 import variables as vari
 # import Engine as engi
@@ -224,6 +226,105 @@ class Phasered(Sig):
         self.inp2 = inp2
         self.sig1.setInput(self.inp2)
         return self
+
+
+class FxMixer(Sig):
+    def __init__(self, inPut, numFXs=3, modu=1, mul=1, add=0):
+
+        self.inPut = inPut
+        self.modu = modu
+        self.numFXs = numFXs
+
+        ##To prevent out of range assignation
+        if self.modu > 1:
+            print 'WARNING: Max modu amount is 1.  modu set to 1.'
+            self.modu = 1
+        elif self.modu <= 0:
+            print 'WARNING: Min modu amount is 0.  modu set to 0.'
+            self.modu = 0
+        if self.numFXs > 7:
+            print 'WARNING: Max numFXs amount is 7.  numFXs set to 7.'
+            self.numFXs = 7
+        elif self.numFXs <= 0:
+            print 'WARNING: Min numFXs amount is 1.  numFXs set to 1.'
+            self.numFXs = 1
+
+        # select which FXs are applied
+        self.fxSel()
+
+        # instantiate Mixer
+        self.mixer1 = Mixer(8, 2)
+
+        # instantiate the Fxs
+        self.fx1 = Distor(self.mixer1[0], self.modu)
+        self.fx2 = Harmon(self.mixer1[1], self.modu)
+        self.fx3 = Filter(self.mixer1[2], self.modu)
+        self.fx4 = Chorused(self.mixer1[3], self.modu)
+        self.fx5 = Panning(self.mixer1[4], self.modu)
+        self.fx6 = Delayer(self.mixer1[5], self.modu)
+        self.fx7 = Phasered(self.mixer1[6], self.modu)
+
+        # assign the Fxs to Mixer inputs
+        self.mixer1.addInput(0,self.inPut)
+        self.mixer1.addInput(1,self.fx1)
+        self.mixer1.addInput(2,self.fx2)
+        self.mixer1.addInput(3,self.fx3)
+        self.mixer1.addInput(4,self.fx4)
+        self.mixer1.addInput(5,self.fx5)
+        self.mixer1.addInput(6,self.fx6)
+        self.mixer1.addInput(7,self.fx7)
+
+        # applies proper internal mixer routing
+        self.routing()
+
+        # last output is picked up here to send sig out of this object
+        Sig.__init__(self, self.mixer1[len(self.mixer1.getKeys())-1],mul,add)
+
+    def fxSel(self):
+        # FX selection - TO BE MODIFIED IF MORE FXs ARE ADDED
+
+        origFXs = []
+        origFXs = random.sample([0,1,2,3,4,5,6],self.numFXs)
+
+        # FX order sorting
+        # Disto always 1st, then harmon, filter or phaser, 
+        #     then chorus or panning, then delay.
+        tempFXs = []
+        TEMPLATE = [[0],[1,2,6],[3,4],[5]]
+        for i in range(len(TEMPLATE)):
+            sub = []
+            sub = [val for val in origFXs if val in TEMPLATE[i]]
+            tempFXs.append(sub)
+
+        for sub in tempFXs:
+            random.shuffle(sub)
+
+        # list to store the selected effects, in correct order
+        self.newFXs = []
+        for sub in tempFXs:
+            self.newFXs += sub
+        return self
+
+    def routing(self, target = 1):
+        # assigns Mixer internal routing depending on the Fxs selected
+        for i in range(self.numFXs):
+            if i == 0:
+                self.mixer1.setAmp(0,self.newFXs[i]-1,target)
+            elif i == len(self.newFXs)-1:
+                # assign the last effect to exit
+                self.mixer1.setAmp(self.newFXs[i-1],len(self.mixer1.getKeys())-1,target)
+            else:
+                self.mixer1.setAmp(self.newFXs[i-1],self.newFXs[i]-1,target)
+        return self
+
+    def chMix(self):
+        # assigns new effects
+        self.routing(target = 0.)
+        self.fxSel()
+        self.routing(target = 1.)
+        return self
+        
+
 
 
 ###################################################### PROB DEPRECATED  -  START
@@ -547,4 +648,4 @@ class Phasered(Sig):
 #                 self.freqPhas.freq = l
 #             else:
 #                 self.freqPhas.freq = self.fxDict['phaser']['lfoFreq'] * speedMod
-######################################################## PROB DEPRECATED  -  END
+######################################################## PROB DEPRECATED  - END
