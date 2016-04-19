@@ -181,17 +181,12 @@ class ReadPoem:
     def playVoice(self):
         self.c = samp.SoundRead(1, speed=1, fileSel = vari.poemPath)
         self.c2 = Biquad(self.c, 800,type=1, mul=1.2)
-        self.time = random.uniform(0.03,0.1)
-        self.randTime = [random.uniform(0.9,1.1)*self.time for i in range(2)]
-        self.c3 = Delay(self.c2, self.randTime, 
-                                 random.uniform(0.1,0.3), 
-                                 mul = 0.9)
-        self.c23 = self.c2 + self.c3
-        self.c4 = WGVerb(self.c23, random.uniform(0.2,0.4)).out()
+        rvbFeed = random.uniform(0.1,0.6)
+        self.c3 = WGVerb(self.c2, [rvbFeed,rvbFeed*random.uniform(0.99,1.01)]).out()
         self.done = self.cleanUp()
 
     def cleanUp(self):
-        self.clean = TrigFunc(self.c1['trig'], self.poem1.clean)
+        self.clean = TrigFunc(self.c.returnTrig(), self.poem1.clean)
 
 def midiCcDetectOn():
     midiMet.play()

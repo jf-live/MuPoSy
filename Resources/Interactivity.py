@@ -63,25 +63,23 @@ tr = TrigFunc(midiMet, signalIn.retVal)
 # To change the variables according to CC data
 
 def distance():
-    # must be a better way for the variables...
-    filtFreq = vari.currentCCSnd
-    sineMul = vari.currentCCSnd
-    synthMul = vari.currentCCSnd
-    sineRev = vari.currentCCSnd
-    tempo = vari.currentCCSnd
-    mTempo = vari.currentCCSnd
-    # adjusting hipass 
+    # all variables are taken from the same MIDI CC value
+    # various names are used for clarity
+    sineRev = synthMul = sineMul = filtFreq = vari.currentCCSnd
+    mTempo = tempo = vari.currentCCSnd
+
+    # adjusting hipass for samples
     if filtFreq < 40:
-        vari.outFiltFreq = util.translate(filtFreq, 0,40, 0, 2000)
+        vari.outFiltFreq = rescale(filtFreq, 0,40, 0, 2000)
     elif filtFreq >= 40:
         if filtFreq > 100:
             filtFreq = 100
-        vari.outFiltFreq = util.translate(filtFreq, 40,100, 2000, 8000)
+        vari.outFiltFreq = rescale(filtFreq, 40,100, 2000, 12000)
     if sineMul < 10:
         sineMul = 10
     if sineMul > 85:
         sineMul = 85
-    vari.sineGenMul = util.translate(sineMul, 10, 85, 0,1)
+    vari.sineGenMul = rescale(sineMul, 10, 85, 0,1)
     if synthMul < 10:
         synthMul = 10
     if synthMul > 100:
@@ -92,11 +90,17 @@ def distance():
     if sineRev > 100:
         sineRev = 100
     vari.sineRevMul = rescale(sineRev,50,100,0.8,0.99,1)
-    # vari.synthGenMul = util.translate(synthMul, 10, 80, 1,0.1)
-    vari.sineTempo = util.translate(tempo, 0, 127, 0.7,0.3)
-    if mTempo > 80:
-        mTempo = 80
-    vari.mainTempo = util.translate(mTempo, 0, 80, vari.mainTempoInit,8)
+    vari.sineTempo = rescale(tempo, 0, 127, 0.7,0.3)
+    if mTempo < 30:
+        vari.mainTempo = rescale(mTempo, 0, 30, vari.mainTempoInit,vari.mainTempoInit/2)
+    elif mTempo >= 30 and mTempo < 45:
+        vari.mainTempo = rescale(mTempo, 30, 45, vari.mainTempoInit/2,vari.mainTempoInit/8)
+    elif mTempo >= 45 and mTempo < 65:
+        vari.mainTempo = rescale(mTempo, 45, 65, vari.mainTempoInit/8,vari.mainTempoInit/16)
+    elif mTempo >= 65:
+        if mTempo > 100:
+            mTempo = 100
+        vari.mainTempo = rescale(mTempo, 65, 100, vari.mainTempoInit/16,0.01)
 
 
 patMIDI = Pattern(distance,0.01).play(delay=2)

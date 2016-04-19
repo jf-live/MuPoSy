@@ -9,10 +9,11 @@ from pyo import *
 import random
 
 
-mainTempoInit = random.uniform(0.2,4) # mainTempoInit keeps the slowest possible time for a note
+mainTempoInit = random.uniform(0.2,1) # mainTempoInit keeps the slowest possible time for a note
 mainTempo = mainTempoInit #mainTempo is the current tempo, affected by MIDI CC in Engine.py
 secTempo = mainTempo/2.
 sineTempo = 1 #sineTempo is also affected by MIDI CC; is used by sines with Voice
+fxChangeTime = 15 # time for pattern to change the FXs
 
 
 currentCCVoix = 0  # pour transmettre les valeurs CC pour Voix

@@ -28,36 +28,50 @@ from pyo import *
 notes = algo.Notes(key='D')
 vari.notesList = notes.getListNotes()
 
-# to play synths
+### Synths section:
 
-# gen1 = algo.AlgoGen(notes = "low", 
-#                     tempo = vari.mainTempo* random.choice([2,4]), 
-#                     side = "mid",
-#                     mul = 0.05)
-# # gen2 = algo.AlgoGen(tempo = vari.mainTempo* random.choice([.2,.4]))
-# gen3 = algo.AlgoGen(notes = "loop",
-#                     tempo = vari.mainTempo* 0.125, 
-#                     side = "left",
-#                     mul = 0.05)
-gen4 = algo.AlgoGen(notes = "loop",
-                    tempo = vari.mainTempo* random.choice([0.125,0.25]), 
-                    side = "right", 
-                    mul = 0.05)
+# generates the synth sounds
+gen1 = algo.AlgoGen(notes = "low", 
+                    tempo = vari.mainTempoInit* random.choice([2,4]), 
+                    side = "mid",
+                    mul = 0.8)
+# gen2 = algo.AlgoGen(tempo = vari.mainTempoInit* random.choice([.2,.4]))
+gen3 = algo.AlgoGen(notes = "loop",
+                    tempo = vari.mainTempoInit* 0.125, 
+                    side = "mid",
+                    mul = 0.6)
+# gen4 = algo.AlgoGen(notes = "loop",
+#                     tempo = vari.mainTempoInit* random.choice([0.125,0.25]), 
+#                     side = "right", 
+#                     mul = 0.6)
 
-# genFx1 = effe.FxMixer(gen1)
-# # genFx2 = effe.FxMixer(gen2)
-# genFx3 = effe.FxMixer(gen3)
-genFx4 = effe.FxMixer(gen4)
+# applies effects
+genFX1 = effe.FxMixer(gen1)
+# genFX2 = effe.FxMixer(gen2)
+genFX3 = effe.FxMixer(gen3)
+# genFX4 = effe.FxMixer(gen4)
 
-# i = Compress(genFx1,-40,ratio = 20, mul=4.5)
-# i.out()
-# # i2 = Compress(genFx2,-40,ratio = 20, mul=4.5)
-# # i2.out()
-# i3 = Compress(genFx3,-40,ratio = 20, mul=4.5)
-# i3.out()
-i4 = Compress(genFx4,-40,ratio = 20, mul=4.5)
-i4.out()
+def chFXs():
+    print "changing FXs"
+    genFX1.changeFXs()
+    # genFX2.changeFXs()
+    genFX3.changeFXs()
+    # genFX4.changeFXs()
 
+patChFXs = Pattern(chFXs,vari.fxChangeTime).play()
+
+
+# compression and output
+# heavy compression is applied to prevent annoying peaks sometimes created by 
+# some settings
+genOut1 = Compress(genFX1,-40,ratio = 20)
+# genOut2 = Compress(genFX2,-40,ratio = 20, mul=4.5)
+genOut3 = Compress(genFX3,-40,ratio = 20)
+# genOut4 = Compress(genFX4,-40,ratio = 20)
+
+# filtering from Interactivity and output
+gensTot = genOut1 + genOut3
+gensOutput = ButHP(gensTot,vari.outFiltFreqSig).out()
 
 
 # to play the sines "twinkles" while the voice is talking
@@ -67,8 +81,8 @@ sine.out()
 
 ### to play sound objects
 
-# samp1 = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]    ##### TO REENABLE AFTER TESTING
-# samp2 = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]    ##### TO REENABLE AFTER TESTING
+samp1 = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]
+# samp2 = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]
 
 # to change the notes for the pads
 def chNotes():

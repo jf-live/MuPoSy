@@ -30,7 +30,7 @@ class MelMaker:
         # 2 à 4 mélodies de 3 à 6 notes sont générées puis stockées dans une list
         coin = random.random()
         for i in range(self.numMel):
-            if coin >= 0.3:
+            if coin >= 0.5:
                 self.mel.append([])
                 for j in range(random.randint(3,4)):
                     if j == 0:
@@ -43,7 +43,7 @@ class MelMaker:
                         self.mel[i].append(random.choice(self.freqs[tempFreq:tempFreq+3]))
                     else:
                         self.mel[i].append(random.choice(self.freqs[5:]))
-            else:
+            elif coin < 0.5 and coin >= 0.25:
                 self.mel.append([])
                 for j in range(random.randint(3,4)):
                     if j ==0:
@@ -56,6 +56,20 @@ class MelMaker:
                             self.mel[i].append(random.choice(self.freqs[-4:]))
                     else:
                         self.mel[i].append(self.mel[i][0]*2)
+            else:
+                self.mel.append([])
+                for j in range(random.randint(3,4)):
+                    if j == 0:
+                        self.mel[i].append(self.freqs[0]*2)
+                    elif j == 1 or j == 2:
+                        coin2 = random.random()
+                        if coin2 > 0.5:
+                            self.mel[i].append(self.freqs[0]*2)
+                        else:
+                            self.mel[i].append(self.freqs[0]*4)
+                    else:
+                        self.mel[i].append(self.freqs[0]*8)
+
     def getMel(self):
         return self.mel
 
@@ -100,14 +114,20 @@ class AlgoGen(Sig):
             self.whatFunc = self.loopMel
             self.inst = "normal"
 
-
         self.tfunc = TrigFunc(self.beat, self.whatFunc)
         self.trigEnv = TrigEnv(self.beat, self.env, self.beat['dur'])
+
+        self.patUpdateTempo = Pattern(self.keepTime,0.05).play()
 
         self.synthNum = random.randint(1,5)  # how many synthGen instances will compose a note
         self.a = [synt.SynthGen(inst=self.inst,side=side,mul=self.trigEnv*vari.synthGenMul) for i in range(self.synthNum)]
         self.forOut = sum(self.a)
         Sig.__init__(self,self.forOut,[mul,mul],add)
+
+    def keepTime(self):
+        # modifies tempo according to MIDI CC
+        self.beat.setTime(vari.mainTempo)
+        self.patChangeMel.setTime(vari.mainTempo*16.)
 
     def changeNote(self):
         # plays random notes in key
@@ -151,20 +171,19 @@ class AlgoGen(Sig):
         if self.melStep < len(self.currentMel):
             # 5% of the time, a note is pitchshifted
             coin = random.random()
-            # if coin >0.95:
-            #     pass
-            #     coin2 = random.random()
-            #     if coin2 < 0.3:
-            #         mult = 2.
-            #     elif coin2 >= 0.3 and coin2 < 0.5:
-            #         mult = 3.
-            #     elif coin2 >=0.5 and coin2 < 0.7:
-            #         mult = 1.5
-            #     else:
-            #         mult = 0.5
-            #     [self.a[i].setNewFreq(self.currentMel[self.melStep]*mult) for i in range(self.synthNum)]
-            # else:
-            #     [self.a[i].setNewFreq(self.currentMel[self.melStep]) for i in range(self.synthNum)]
+            if coin >0.95:
+                coin2 = random.random()
+                if coin2 < 0.3:
+                    mult = 2.
+                elif coin2 >= 0.3 and coin2 < 0.5:
+                    mult = 3.
+                elif coin2 >=0.5 and coin2 < 0.7:
+                    mult = 1.5
+                else:
+                    mult = 0.5
+                [self.a[i].setNewFreq(self.currentMel[self.melStep]*mult) for i in range(self.synthNum)]
+            else:
+                [self.a[i].setNewFreq(self.currentMel[self.melStep]) for i in range(self.synthNum)]
             [self.a[i].setNewFreq(self.currentMel[self.melStep]) for i in range(self.synthNum)]
             self.melStep +=1
         # wraps around at the end of the melody

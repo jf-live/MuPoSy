@@ -25,14 +25,12 @@ origFXs = random.sample([0,1,2,3,4,5,6],numFXs)
 ###FX order sorting
 ### Disto always 1st, then harmon, filter or phaser, 
 ###     then chorus or panning, then delay.
-
-
-a = [2,3,3,4,5]
-
-for i in range(5):
-    if i == len(a)-1:
-        print "tututut"
-    print a[i]
+s = Server().boot()
+s.start()
+lfo = Sine(freq=4, mul=.02, add=1)
+lf2 = Sine(freq=.25, mul=20, add=30)
+a = Blit(freq=[100, 99.7]*lfo, harms=lf2, mul=.3).out()
+s.gui(locals())
 
 
 

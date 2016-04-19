@@ -229,7 +229,7 @@ class Phasered(Sig):
 
 
 class FxMixer(Sig):
-    def __init__(self, inPut, numFXs=3, modu=1, mul=1, add=0):
+    def __init__(self, inPut, numFXs=2, modu=1, mul=1, add=0):
 
         self.inPut = inPut
         self.modu = modu
@@ -253,7 +253,7 @@ class FxMixer(Sig):
         self.fxSel()
 
         # instantiate Mixer
-        self.mixer1 = Mixer(8, 2)
+        self.mixer1 = Mixer(8, 2, vari.fxChangeTime/1.1)
 
         # instantiate the Fxs
         self.fx1 = Distor(self.mixer1[0], self.modu)
@@ -317,7 +317,7 @@ class FxMixer(Sig):
                 self.mixer1.setAmp(self.newFXs[i-1],self.newFXs[i]-1,target)
         return self
 
-    def chMix(self):
+    def changeFXs(self):
         # assigns new effects
         self.routing(target = 0.)
         self.fxSel()

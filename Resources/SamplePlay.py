@@ -66,6 +66,9 @@ class SoundRead(Sig):
         self.sf.stop()
         return self
 
+    def returnTrig(self):
+        return self.sf['trig']
+
 
 ###class where granulation is used on soundfiles
 class GranuleSf(Sig):
@@ -114,10 +117,10 @@ class GranuleSf(Sig):
             self.gr = Granulator(self.snd, grEnv, grains=dns, pitch=pit, pos=self.pos, mul=self.noteEnv*0.7)
 
         self.grClip = Clip(self.gr)
-        self.gr2 = Compress(self.grClip, -30,6,0.05, mul = 0.8*self.mulInter)
+        self.gr2 = Compress(self.grClip, -30,6,0.05, mul = 0.5*self.mulInter)
         self.gr3 = effe.Harmon(self.gr2,mix = 0.5)
         self.gr4 = effe.Delayer(self.gr3)
-        self.gr5 = Biquad(self.gr4, 20, type = 1)
+        self.gr5 = Biquad(self.gr4, vari.outFiltFreqSig, type = 1)
 
         # panning stuff
         lfoFreq = random.uniform(0.1,1)
@@ -127,15 +130,10 @@ class GranuleSf(Sig):
 
         # reverb and out
         revFeed = random.uniform(0.5,0.9)
-        self.grVerb = WGVerb(self.pan, [revFeed, revFeed*(random.uniform(0.98,1.02))])
+        self.grVerb = WGVerb(self.pan, [revFeed, revFeed*random.uniform(0.98,1.02)])
         Sig.__init__(self, self.grVerb, mul, add)
 
-        self.pat = Pattern(self.chooseNew,self.dur + random.uniform(2,4)).play(delay = random.uniform(1,3))
-
-    # def setFilt(self):
-
-    #     self.gr5.freq = rescale(vari.)
-    #     return self
+        self.patChooseNew = Pattern(self.chooseNew,self.dur + random.uniform(2,4)).play(delay = random.uniform(1,3))
 
     def setEnv(self):  
         self.att = random.uniform(0.01,1)
@@ -170,7 +168,7 @@ class GranuleSf(Sig):
             else:
                 vari.sampColl = []
                 selSndIndex = random.randint(0,len(allSndsTables)-1)
-            self.gr.setTable(allSndsTables[selSndIndex])   ### CREATES THE BIG NOISE OF INFINITE DEATH (sometimes) !!!!!
+            self.gr.setTable(allSndsTables[selSndIndex])   ### CREATES THE BIG NOISE OF INFINITE DEATH (sometimes) !!!!! NOT ANYMORE :D
             vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples
         # changes the position pointer type
         coinPos = random.random()
@@ -182,7 +180,7 @@ class GranuleSf(Sig):
                                  allSndsTables[selSndIndex][0].getSize())
         self.gr.mul = SigTo(self.noteEnv*0.7,0.05)
         self.gr4.setTimeFb()
-        self.pat.time = self.dur + random.uniform(2,4)
+        self.patChooseNew.time = self.dur + random.uniform(2,4)
         self.setEnv()
         self.noteEnv.play()
 

@@ -19,29 +19,9 @@ print 'Seed: ', rSeed
 random.seed(rSeed)
 
 
-# Trigger generators for synthGens
-genMet = Beat(vari.mainTempo).play()
-genEuc = Euclide(vari.mainTempo, onsets = [8,5],poly=4).play()
-
-
 # Trigger generator for event detection
 eventMetVoix = Metro(0.05).play()
 eventMetSnd = Metro(0.05).play()
-
-
-changeMet = Metro(vari.mainTempo*4)
-
-# to map values
-def translate(value, leftMin, leftMax, rightMin, rightMax):
-    # Figure out how 'wide' each range is
-    leftSpan = leftMax - leftMin
-    rightSpan = rightMax - rightMin
-
-    # Convert the left range into a 0-1 range (float)
-    valueScaled = float(value - leftMin) / float(leftSpan)
-
-    # Convert the 0-1 range into a value in the right range.
-    return rightMin + (valueScaled * rightSpan)
 
 
 class TxtFile:
