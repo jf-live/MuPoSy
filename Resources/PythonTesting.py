@@ -22,13 +22,9 @@ import constants as cons
 
 s = Server().boot()
 s.start()
-sf = SfPlayer(SNDS_PATH + "/transparent.aif", loop=True, mul=.4).out()
-amp = PeakAmp(sf)
-amp2 = sf.get()
 
-n = Noise(mul=amp).out(1)
-
-
+a = CosTable([(0,0), (700,1), (7400,1), (8191,0)])
+a.view()
 
 
 

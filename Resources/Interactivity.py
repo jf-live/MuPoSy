@@ -70,11 +70,13 @@ def distance():
 
     # adjusting hipass for samples
     if filtFreq < 40:
-        vari.outFiltFreqSig.setValue(rescale(filtFreq, 20,40, 30, 2000))
-    elif filtFreq >= 40:
+        vari.outFiltFreqSig.setValue(rescale(filtFreq, 0,40, 30, 2000))
+    elif filtFreq >= 40 and filtFreq < 80:
+        vari.outFiltFreqSig.setValue(rescale(filtFreq, 40,80, 2000, 7000))
+    elif filtFreq >= 80:
         if filtFreq > 100:
             filtFreq = 100
-        vari.outFiltFreqSig.setValue(rescale(filtFreq, 40,100, 2000, 12000))
+        vari.outFiltFreqSig.setValue(rescale(filtFreq, 80,100, 7000, 12000))
     if sineMul < 10:
         sineMul = 10
     if sineMul > 85:

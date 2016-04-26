@@ -41,7 +41,8 @@
 
 
 ######## TODO:  SETUP PROGRESSIVE TONE VARIATION FOR SYNTHS
-########        WORK ON MEL
+########        WORK ON MEL - DONE-ISH
+########        WORK ON MEL Part 2: CHANGE THE MELODY IN SYNCH WITH DEMO MODE
 ########        FIGURE OUT THE CAUSE OF THE SLOW BUT STEADY STREAMS INCREASE - DONE
 ########        FIX THE CHANGE OF KEY FOR NOTES (NOT WORKING AT THIS TIME)
 ########        FIGURE OUT THE CAUSE OF THE AUDIO CUT, VERY LIKELY RELATED
@@ -51,7 +52,7 @@
 
 from pyo import *
 # Server booted here because it is needed when the resources are loaded
-s = Server(sr = 48000, buffersize = 1024)
+s = Server(sr = 44100, buffersize = 1024)
 print pm_list_devices()
 # nanoKontrol is connected here.  See Interactivity.py for details.
 s.setMidiInputDevice(0)

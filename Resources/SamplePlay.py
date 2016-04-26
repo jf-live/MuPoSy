@@ -132,7 +132,9 @@ class GranuleSf(Sig):
 
         # reverb and out
         revFeed = random.uniform(0.5,0.9)
-        self.grVerb = WGVerb(self.pan, [revFeed, revFeed*random.uniform(0.98,1.02)])
+        lfoFreqBal = random.uniform(0.1,1)
+        self.revBal = LFO(freq=lfoFreqBal,type=6).range(0.5,1)
+        self.grVerb = WGVerb(self.pan, [revFeed, revFeed*random.uniform(0.98,1.02)], self.revBal)
         Sig.__init__(self, self.grVerb, mul, add)
 
         self.patChooseNew = Pattern(self.chooseNew,self.dur + random.uniform(0.2,4)).play(delay = random.uniform(1,3))

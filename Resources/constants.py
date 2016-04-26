@@ -7,13 +7,35 @@
 
 import os
 
+#### Play Mode
+# "Demo" means the melody will change every 20 seconds
+# "Forever" means the melody will always be kind of the same
+PLAYMODE = "Demo"
+# PLAYMODE = "Forever"
+
+# If demo mode is selected, setup the time in seconds for each demo here
+DEMOTIME = 20
+
 #### How many outputs to use
 NUMOUTS = 2
 
 #### How many SynthGen and Samples streams to create
 NUMGENS = 2
-
 NUMSAMPS = 1
+
+##To prevent out of range assignation
+if NUMGENS > 4:
+    print 'WARNING: Max NUMGENS amount is 4.  NUMGENS set to 4.'
+    NUMGENS = 4
+elif NUMGENS < 1:
+    print 'WARNING: Min NUMGENS amount is 1.  NUMGENS set to 1.'
+    self.modu = 1
+if NUMSAMPS > 2:
+    print 'WARNING: Max NUMSAMPS amount is 7.  NUMSAMPS set to 7.'
+    NUMSAMPS = 2
+elif NUMSAMPS < 1:
+    print 'WARNING: Min NUMSAMPS amount is 1.  NUMSAMPS set to 1.'
+    NUMSAMPS = 1
 
 
 #### Path to the 'Resources' folder

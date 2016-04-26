@@ -23,10 +23,12 @@ import random, threading, time
 
 # generates short melodies to be looped
 class MelMaker:
-    def __init__(self, freqs, numMel):
+    def __init__(self):
+        self.mel = []  # to store the melodies
+
+    def genMel(self,freqs,numMel):
         self.freqs = freqs
         self.numMel = numMel # how many melodies will be generated
-        self.mel = []  # to store the melodies
         # 2 à 4 mélodies de 3 à 6 notes sont générées puis stockées dans une list
         coin = random.random()
         for i in range(self.numMel):
@@ -69,6 +71,7 @@ class MelMaker:
                             self.mel[i].append(self.freqs[0]*4)
                     else:
                         self.mel[i].append(self.freqs[0]*8)
+        return self
 
     def getMel(self):
         return self.mel
@@ -80,25 +83,38 @@ class AlgoGen(Sig):
         This module generates a stream of notes, with a specified root note.
         Duration of this stream is specified in seconds.
         '''
+
+        # to set tempo of this synth relative to mainTempo
         self.tempo = tempo
-        primaryBeat = random.randint(80,100)
-        secondaryBeat = random.randint(10,60)
+
+        # for periodic tempo variations
+        self.tempoMod = 1
+
+        # selects weights for differents beats
+        oneBeat = random.randint(80,100)
+        secBeat = random.randint(10,60)
         thirdBeat = random.randint(30,60)
-        self.beat = Beat(self.tempo,8, 100,10,10).play()
+        self.beat = Beat(self.tempo,8, oneBeat,secBeat,thirdBeat).play()
+        # self.beat = Beat(self.tempo,8, 100,10,10).play()
+
+        # generates envelope
         self.env = CosTable([(0,.0),(3000,1.),(5191,1.),(8191,0.)])
+
         # to keep track of which step of the melody is being played
         self.melStep = 0
+
         # how many melodies will be generated
         self.numMel = random.randint(2,4)
+
         # to store the generated looped melody
         self.mel = []
 
         # generates a looped melody
-        f = MelMaker(vari.scaleInUse, self.numMel)
+        f = MelMaker().genMel(vari.scaleInUse, self.numMel)
         self.mel = f.getMel()
 
-        randInit = random.randint(0,len(self.mel)-1)
-        self.currentMel = self.mel[randInit]
+        randInitMel = random.randint(0,len(self.mel)-1)
+        self.currentMel = self.mel[randInitMel]
         self.melRepCount = 0
         # change melody every 16 notes played
         self.patChangeMel = Pattern(self.changeMel,self.tempo*16.0).play()
@@ -113,10 +129,12 @@ class AlgoGen(Sig):
         elif notes == "loop":
             self.whatFunc = self.loopMel
             self.inst = "normal"
+            self.patTempoMod = Pattern(self.tempoModifier,vari.mainTempo*self.tempo).play()
 
         self.tfunc = TrigFunc(self.beat, self.whatFunc)
         self.trigEnv = TrigEnv(self.beat, self.env, self.beat['dur'])
 
+        # to change the tempo according to Interactivity
         self.patUpdateTempo = Pattern(self.keepTime,0.05).play()
 
         self.synthNum = random.randint(1,5)  # how many synthGen instances will compose a note
@@ -124,10 +142,23 @@ class AlgoGen(Sig):
         self.forOut = sum(self.a)
         Sig.__init__(self,self.forOut,[mul,mul],add)
 
+    def tempoModifier(self):
+        # bursts of tempo change
+        coin = random.random()
+        if coin > 0.50:
+            self.tempoMod = 1
+        elif coin <= 0.50 and coin > 0.30:
+            self.tempoMod = 2
+        elif coin <=0.30 and coin > 0.10:
+            self.tempoMod = 4
+        elif coin <= 0.10:
+            self.tempoMod = 8
+        return self
+
     def keepTime(self):
         # modifies tempo according to MIDI CC
-        self.beat.setTime(vari.mainTempo)
-        self.patChangeMel.setTime(vari.mainTempo*16.)
+        self.beat.setTime(vari.mainTempo*self.tempo*self.tempoMod)
+        self.patChangeMel.setTime(vari.mainTempo*self.tempo*16.)
 
     def changeNote(self):
         # plays random notes in key
