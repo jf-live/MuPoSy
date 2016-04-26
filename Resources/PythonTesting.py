@@ -11,6 +11,7 @@ import random, os, thread
 import constants as cons
 
 
+
 # s.start()
 # snd = SndTable(SNDS_PATH + "/transparent.aif")
 # env = HannTable()
@@ -18,20 +19,22 @@ import constants as cons
 # dur = Noise(.001, .1)
 # g = Granulator(snd, env, [1, 1.001], pos, dur, 24, mul=.1).out()
 
-numFXs = 2
-origFXs = []
-origFXs = random.sample([0,1,2,3,4,5,6],numFXs)
 
-###FX order sorting
-### Disto always 1st, then harmon, filter or phaser, 
-###     then chorus or panning, then delay.
 s = Server().boot()
 s.start()
-lfo = Sine(freq=4, mul=.02, add=1)
-lf2 = Sine(freq=.25, mul=20, add=30)
-a = Blit(freq=[100, 99.7]*lfo, harms=lf2, mul=.3).out()
-s.gui(locals())
+sf = SfPlayer(SNDS_PATH + "/transparent.aif", loop=True, mul=.4).out()
+amp = PeakAmp(sf)
+amp2 = sf.get()
 
+n = Noise(mul=amp).out(1)
+
+
+
+
+
+
+
+s.gui(locals())
 
 
 # class DistoJF(Sig):

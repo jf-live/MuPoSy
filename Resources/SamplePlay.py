@@ -82,7 +82,7 @@ class GranuleSf(Sig):
         self.path = path
         selSndIndex = random.randint(0,len(allSndsTables)-1)
         self.snd = allSndsTables[selSndIndex]   # Selects to table to be played at init
-        vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples
+        vari.sampColl.append(selSndIndex)  # To keep track of played samples
         self.mulInter = vari.synthGenMul  # fades according to interaction input
 
         # Grain envelope
@@ -120,20 +120,22 @@ class GranuleSf(Sig):
         self.gr2 = Compress(self.grClip, -30,6,0.05, mul = 0.5*self.mulInter)
         self.gr3 = effe.Harmon(self.gr2,mix = 0.5)
         self.gr4 = effe.Delayer(self.gr3)
-        self.gr5 = Biquad(self.gr4, vari.outFiltFreqSig, type = 1)
+        # self.gr5 = ButHP(self.gr4, 30)
+        self.gr5 = ButHP(self.gr4, vari.outFiltFreqSig)
+        self.gr6 = DCBlock(self.gr5) # DC problems introduced by vari.outFiltFreqSig, DCBlock will do for now...
 
         # panning stuff
         lfoFreq = random.uniform(0.1,1)
         self.lfoPan = LFO(freq=lfoFreq,type=random.randint(0,7),mul=.5, add=.5)
         self.toPan = SigTo(self.lfoPan, random.uniform(0.01,1))
-        self.pan = SPan(self.gr5, cons.NUMOUTS, self.toPan)
+        self.pan = SPan(self.gr6, cons.NUMOUTS, self.toPan)
 
         # reverb and out
         revFeed = random.uniform(0.5,0.9)
         self.grVerb = WGVerb(self.pan, [revFeed, revFeed*random.uniform(0.98,1.02)])
         Sig.__init__(self, self.grVerb, mul, add)
 
-        self.patChooseNew = Pattern(self.chooseNew,self.dur + random.uniform(2,4)).play(delay = random.uniform(1,3))
+        self.patChooseNew = Pattern(self.chooseNew,self.dur + random.uniform(0.2,4)).play(delay = random.uniform(1,3))
 
     def setEnv(self):  
         self.att = random.uniform(0.01,1)
@@ -149,17 +151,21 @@ class GranuleSf(Sig):
         self.dur = (self.att+self.dec+self.rel)+random.uniform(0.1, 6)
 
     def chooseNew(self):
-        self.gr.mul = SigTo(0.0,0.05)
+        print "chooseNEW"
         self.gr3.mix = random.random()
+
         # changes the reverb fb once in a while
         coinRev = random.random()
         if coinRev > 0.8: 
             revFeed = random.uniform(0.5,0.9)
             self.grVerb.feedback = [revFeed, revFeed*(random.uniform(0.98,1.02))]
-        selSndIndex = random.randint(0,len(allSndsTables)-1)
-        # 20% of the time, a previous sample is repeated
+
+        # 60% of the time, a new sample is selected until the list runs out, at
+        #                  which point the list is cleared and starts anew.
+        # 20% of the time, a previous sample is repeated,
+        # 20% of the time, the sample just played is repeated
         coinSamp = random.random()
-        if coinSamp > 0.2:
+        if coinSamp > 0.4:
             # makes sure all the samples are played once before repeating
             if len(vari.sampColl) != len(allSnds):
                 selSndIndex = random.randint(0,len(allSndsTables)-1)
@@ -168,8 +174,21 @@ class GranuleSf(Sig):
             else:
                 vari.sampColl = []
                 selSndIndex = random.randint(0,len(allSndsTables)-1)
-            self.gr.setTable(allSndsTables[selSndIndex])   ### CREATES THE BIG NOISE OF INFINITE DEATH (sometimes) !!!!! NOT ANYMORE :D
-            vari.sampColl.append(allSnds[selSndIndex])  # To keep track of played samples
+            self.gr.setTable(allSndsTables[selSndIndex])   ### CREATES THE BIG NOISE OF INFINITE DEATH (sometimes) !!!!! NOT ANYMORE :D  ;  OR DOES IT ?!!????
+            vari.sampColl.append(selSndIndex)  # To keep track of played samples
+        elif coinSamp > 0.2 and coinSamp <= 0.4:
+            print len(vari.sampColl)
+            print vari.sampColl
+            if len(vari.sampColl) == 1:
+                selSndIndex = random.randint(0,len(allSndsTables)-1)
+                vari.sampColl.append(selSndIndex)
+            else:
+                selSndIndex = random.choice(vari.sampColl)
+
+            self.gr.setTable(allSndsTables[selSndIndex])
+        elif coinSamp <= 0.2:
+            selSndIndex = random.randint(0,len(allSndsTables)-1)
+
         # changes the position pointer type
         coinPos = random.random()
         if coinPos > 0.2:
@@ -178,11 +197,10 @@ class GranuleSf(Sig):
             self.gr.pos = Phasor(allSndsTables[selSndIndex][0].getRate()*random.uniform(0.01,0.5), 
                                  0, 
                                  allSndsTables[selSndIndex][0].getSize())
-        self.gr.mul = SigTo(self.noteEnv*0.7,0.05)
         self.gr4.setTimeFb()
         self.patChooseNew.time = self.dur + random.uniform(2,4)
         self.setEnv()
-        self.noteEnv.play()
+        self.noteEnv.play(delay=0.1)  # delay applied to prevent the BIG NOISE OF INFINITE DEATH
 
 
 

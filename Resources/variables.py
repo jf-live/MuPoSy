@@ -19,9 +19,7 @@ fxChangeTime = 15 # time for pattern to change the FXs
 currentCCVoix = 0  # pour transmettre les valeurs CC pour Voix
 currentCCSnd = 0  # pour transmettre les valeurs CC pour Sons
 
-
-outFiltFreq = 0 # used to change the master filter, set by CC
-outFiltFreqSig = SigTo(outFiltFreq,0.05)    ############# TO BE FIXED
+outFiltFreqSig = SigTo(0,0.05) # used to change the master filter, set by CC
 
 sineGenMul = 0 # to change the volume of the SineGen, set by CC
 sineRevMul = 0.8 # to change the amount of reverb feedback of SineGen, set by CC
@@ -85,7 +83,7 @@ fxRvbInit = random.choice([.02,.1,.3,.5,.8])
 fx = {  "filter": {
 
         },
-        "disto": {
+        "disto": {""
 
         },
 

@@ -11,7 +11,7 @@ import os
 NUMOUTS = 2
 
 #### How many SynthGen and Samples streams to create
-NUMGENS = 1
+NUMGENS = 2
 
 NUMSAMPS = 1
 
