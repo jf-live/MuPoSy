@@ -20,29 +20,25 @@ import variables as vari
 import utilities as util
 
 
-# to get CC for voice, independant as voice stops this when playing
+# to get CC value
 class MidiCCIn():
-    def __init__(self):
+    def __init__(self, which):
+        """
+        which should be either "Snd" or "Voice"
+        """
+        self.which = which
         self.ctl = Midictl(ctlnumber=0, minscale=0, maxscale=127)
         self.p = Port(self.ctl, .02)
 
     def retVal(self):
         updateVal = self.ctl.get()
-        vari.currentCCVoix = updateVal
-
-# to get CC for everything else
-class MidiCCInSnd():
-    def __init__(self):
-        self.ctl = Midictl(ctlnumber=0, minscale=0, maxscale=127)
-        self.p = Port(self.ctl, .02)
-
-    def retVal(self):
-        updateVal = self.ctl.get()
-        vari.currentCCSnd = updateVal
+        if self.which == "Snd":
+            vari.currentCCSnd = updateVal
+        elif self.which == "Voice":
+            vari.currentCCVoix = updateVal
 
 
-
-
+# not in use right now, to be used with kinect
 class OSCIn():
     def __init__(self):
         self.rec = OscReceive(port=10001, address = ['/depth'])
@@ -57,8 +53,10 @@ class OSCIn():
 
 # To retrieve MIDI CC and affect the sound accordingly
 midiMet = util.eventMetSnd
-signalIn = MidiCCInSnd()
-tr = TrigFunc(midiMet, signalIn.retVal)
+signalInSnd = MidiCCIn("Snd")
+signalInVoice = MidiCCIn("Voice")
+trSnd = TrigFunc(midiMet, signalInSnd.retVal)
+trVoice = TrigFunc(midiMet, signalInVoice.retVal)
 
 # To change the variables according to CC data
 
@@ -105,7 +103,7 @@ def distance():
         vari.mainTempo = rescale(mTempo, 65, 100, vari.mainTempoInit/16,0.01)
 
 
-patMIDI = Pattern(distance,0.01).play(delay=2)
+patMIDI = Pattern(distance,0.001).play(delay=2)
 
     
 

@@ -84,18 +84,16 @@ class AlgoGen(Sig):
         Duration of this stream is specified in seconds.
         '''
 
+        self.notes = notes
+
         # to set tempo of this synth relative to mainTempo
         self.tempo = tempo
 
         # for periodic tempo variations
         self.tempoMod = 1
 
-        # selects weights for differents beats
-        oneBeat = random.randint(80,100)
-        secBeat = random.randint(10,60)
-        thirdBeat = random.randint(30,60)
-        self.beat = Beat(self.tempo,8, oneBeat,secBeat,thirdBeat).play()
-        # self.beat = Beat(self.tempo,8, 100,10,10).play()
+        # selection of weights for differents beats done in self.newLoops
+        self.beat = Beat(self.tempo,8).play()
 
         # generates envelope
         self.env = CosTable([(0,.0),(3000,1.),(5191,1.),(8191,0.)])
@@ -109,14 +107,14 @@ class AlgoGen(Sig):
         # to store the generated looped melody
         self.mel = []
 
+
         # generates a looped melody
-        f = MelMaker().genMel(vari.scaleInUse, self.numMel)
-        self.mel = f.getMel()
+        self.newLoops()
 
         randInitMel = random.randint(0,len(self.mel)-1)
         self.currentMel = self.mel[randInitMel]
         self.melRepCount = 0
-        # change melody every 16 notes played
+        # change melody every 16 notes played (or about, depending on "notes" setting)
         self.patChangeMel = Pattern(self.changeMel,self.tempo*16.0).play()
 
         # if this instance is a "normal" note stream or a bass ("low") note stream
@@ -135,15 +133,36 @@ class AlgoGen(Sig):
         self.trigEnv = TrigEnv(self.beat, self.env, self.beat['dur'])
 
         # to change the tempo according to Interactivity
-        self.patUpdateTempo = Pattern(self.keepTime,0.05).play()
+        self.patUpdateTempo = Pattern(self.keepTime,0.01).play()
 
         self.synthNum = random.randint(1,5)  # how many synthGen instances will compose a note
-        self.a = [synt.SynthGen(inst=self.inst,side=side,mul=self.trigEnv*vari.synthGenMul) for i in range(self.synthNum)]
+        self.a = [synt.SynthGen(inst=self.inst,side=side,mul=self.trigEnv*vari.synthGenMul) for i in range(13)]#range(self.synthNum)]
         self.forOut = sum(self.a)
         Sig.__init__(self,self.forOut,[mul,mul],add)
 
+    def changeNote(self):
+        # plays random notes in key, used by "normal" only
+        coin = random.random()
+        if coin > 0.9:
+            self.newNote = random.choice(vari.scaleInUse[-4:])
+            [self.a[i].setNewFreq(self.newNote) for i in range(self.synthNum)]
+        return self
+
+    def changeNoteLow(self):
+        # plays random bass notes in key, used by "low" only
+        self.newNote = random.choice(vari.scaleInUse[0:3])
+        if self.newNote >= 400:
+            self.newNote /= random.choice([4,8,16])
+        [self.a[i].setNewFreq(self.newNote) for i in range(self.synthNum)]
+        return self
+
+    # def changeGen(self):      ########### NOT IN USE, PROB TO BE DELETED
+    #     # generates a new synthGen
+    #     self.a = [synt.SynthGen() for i in range(self.synthNum)]
+    #     return self
+
     def tempoModifier(self):
-        # bursts of tempo change
+        # bursts of tempo change, used by "loop" only
         coin = random.random()
         if coin > 0.50:
             self.tempoMod = 1
@@ -155,34 +174,8 @@ class AlgoGen(Sig):
             self.tempoMod = 8
         return self
 
-    def keepTime(self):
-        # modifies tempo according to MIDI CC
-        self.beat.setTime(vari.mainTempo*self.tempo*self.tempoMod)
-        self.patChangeMel.setTime(vari.mainTempo*self.tempo*16.)
-
-    def changeNote(self):
-        # plays random notes in key
-        coin = random.random()
-        if coin > 0.9:
-            self.newNote = random.choice(vari.scaleInUse[-4:])
-            [self.a[i].setNewFreq(self.newNote) for i in range(self.synthNum)]
-        return self
-
-    def changeNoteLow(self):
-        # plays random bass notes in key
-        self.newNote = random.choice(vari.scaleInUse[0:3])
-        if self.newNote >= 400:
-            self.newNote /= random.choice([8,16])
-        [self.a[i].setNewFreq(self.newNote) for i in range(self.synthNum)]
-        return self
-
-    def changeGen(self):
-        # generates a new synthGen
-        self.a = [synt.SynthGen() for i in range(self.synthNum)]
-        return self
-
     def changeMel(self):
-        # changed the looped melody being played
+        # changed the looped melody being played, used by "loop" only
         prevMel = self.currentMel
         pick = random.randint(0,len(self.mel)-1)
         self.currentMel = self.mel[pick]
@@ -198,7 +191,7 @@ class AlgoGen(Sig):
         return self
 
     def loopMel(self, coin2 = 0):
-        # plays the looped melody
+        # plays the looped melody, used by "loop" only
         if self.melStep < len(self.currentMel):
             # 5% of the time, a note is pitchshifted
             coin = random.random()
@@ -223,13 +216,30 @@ class AlgoGen(Sig):
             self.melStep = 0
         return self
 
+    def keepTime(self):
+        # modifies tempo according to MIDI CC
+        self.beat.setTime(vari.mainTempo*self.tempo*self.tempoMod)
+        self.patChangeMel.setTime(vari.mainTempo*self.tempo*16.)
+        if self.notes == "loop":
+            self.patTempoMod.setTime(vari.mainTempo*self.tempo)
+
+    def newLoops(self):
+        # generates a looped melody
+        print "New loops"
+        f = MelMaker().genMel(vari.scaleInUse, self.numMel)
+        self.mel = f.getMel()
+        self.beat.setW1(random.randint(80,100))
+        self.beat.setW2(random.randint(10,60))
+        self.beat.setW3(random.randint(30,60))
+        return self
+
 
 
 class AlgoSamp:
     def __init__(self, notes=[60], mainDur=15): 
         '''
         This module manages the samples being played.
-        THIS IS NOW ALL DONE INSIDE samp.GranuleSf()
+        THIS IS NOW ALL DONE INSIDE samp.GranuleSf(), so this is quite empty
         '''
         self.grSamp = samp.GranuleSf(mainDur = mainDur)
         self.grSamp.out()
@@ -239,52 +249,15 @@ class AlgoSamp:
 class Notes:
     def __init__(self, key='Rand', scale='Rand'):
         '''
-        This class creates a list of notes in Hz to choose from for melodies.
+        This class creates a list of notes in Hz to choose from for synths.
         '''
-        self.key = key
-        self.scale = scale
-
-        if self.key == 'Rand':
-            self.root = random.choice([60,48,36])
-            self.root = 60+random.choice(cons.KEYS.values())          #finding the root from the requested key
-        else:
-            self.root = 60+cons.KEYS[self.key]        #finding the root from the requested key
-
-        # add the root note to a list to retrieve later.
-        vari.rootColl.append(self.root) 
-
-        if self.scale == 'Rand':
-            self.notes = random.choice(cons.SCALES.values())          #getting the basic note list
-        else:
-            self.notes = cons.SCALES[self.scale]          #getting the basic note list
-
-        # add the scale to a list to retrieve later.
-        vari.scaleColl.append(self.notes)   
-
-        self.notes = [x + self.root for x in self.notes]      #adding the root to the notes list
-        octaves = [12,-12,-24,-36]
-        self.selOctaves = random.sample(octaves, random.randint(2,4))
-        self.selOctaves.append(0)
-        vari.octColl.append(self.selOctaves)
-        self.notesFull = []
-        for i in self.selOctaves:
-            for x in self.notes:
-                self.notesFull.append(x+i)
-        self.notesFull.sort()
-        print "scale: ", self.notesFull
-        vari.scaleInUse = [midiToHz(x) for x in self.notesFull]
+        self.pickNewNotes(key = key, scale = scale)
 
     def getListNotes(self):
         return self.notesFull
 
-    def getListHz(self):
-        self.hzFull = []
-        self.hzFull = [midiToHz(x) for x in self.notesFull]  #notes converted to Hz
-        return self.hzFull
-
     def newNotes(self, key='Rand', scale='Rand'):
-        self.key = key
-        self.scale = scale
+        ###
 
         # Determines if a new root/scale should be piked, or a previous one 
         # should be reused.
@@ -312,26 +285,34 @@ class Notes:
             vari.scaleInUse = [midiToHz(x) for x in self.notesFull]
 
         else:
+            # Pick completely new notes
+            self.pickNewNotes(key = key, scale = scale)
+
+    def pickNewNotes(self, key='Rand', scale='Rand'):
             # Pick new
-            if self.key == 'Rand':
+            if key == 'Rand':
                 self.root = random.choice([60,48,36])
-                self.root = 60+random.choice(cons.KEYS.values())          #finding the root from the requested key
+                # finding the root from the requested key
+                self.root = 60+random.choice(cons.KEYS.values())
             else:
-                self.root = 60+cons.KEYS[self.key]        #finding the root from the requested key
+                # finding the root from the requested key
+                self.root = 60+cons.KEYS[self.key]
 
             # add the root note to a list to retrieve later.
             vari.rootColl.append(self.root) 
 
-            if self.scale == 'Rand':
-                self.notes = random.choice(cons.SCALES.values())          #getting the basic note list
+            if scale == 'Rand':
+                # getting the basic note list
+                self.notes = random.choice(cons.SCALES.values())
             else:
-                self.notes = cons.SCALES[self.scale]          #getting the basic note list
+                # getting the basic note list
+                self.notes = cons.SCALES[self.scale]
 
             # add the scale to a list to retrieve later.
             vari.scaleColl.append(self.notes)   
 
-
-            self.notes = [x + self.root for x in self.notes]      #adding the root to the notes list
+            # adding the root to the notes list
+            self.notes = [x + self.root for x in self.notes] 
             octaves = [12,24,36,-12,-24,-36]
             self.selOctaves = random.sample(octaves, random.randint(1,4))
             self.selOctaves.append(0)

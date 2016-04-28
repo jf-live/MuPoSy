@@ -213,7 +213,7 @@ def playing(delay):
         # Waits 50 seconds before the next poem can be generated, to avoid cutoffs
         callerReset = CallAfter(ccValReset, time=50)  
 
-signalIn = inte.MidiCCIn()
+signalIn = inte.MidiCCIn("Voice")
 
 # Allow enough time to render the Tts
 ttsDel = 2

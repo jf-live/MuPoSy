@@ -11,10 +11,11 @@ import os
 # "Demo" means the melody will change every 20 seconds
 # "Forever" means the melody will always be kind of the same
 PLAYMODE = "Demo"
-# PLAYMODE = "Forever"
+# PLAYMODE = "Manual"
 
 # If demo mode is selected, setup the time in seconds for each demo here
-DEMOTIME = 20
+DEMOTIME = 40
+DEMOSLOPE = 7 # ramp time for the main synth envelope
 
 #### How many outputs to use
 NUMOUTS = 2

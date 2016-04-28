@@ -27,6 +27,7 @@ from pyo import *
 
 ####  !!!   Poem audio is completely done in Voix.py   !!!   ####
 
+# picks notes and scale at init
 notes = algo.Notes()
 vari.notesList = notes.getListNotes()
 
@@ -37,74 +38,63 @@ vari.notesList = notes.getListNotes()
 #   some settings.
 # HP filtering from Interactivity is applied before outputing.
 
-def gen1():
-    gen01 = algo.AlgoGen(notes = "loop",
-                         tempo = 0.125, 
-                         side = "mid",
-                         mul = 0.6)
-    genFX01 = effe.FxMixer(gen01)
-    return genFX01
+class Gens(Sig):
+    def __init__(self, which = 1, mul = 1, add = 0):
+        if which == 1:
+            self.gen = algo.AlgoGen(notes = "loop",
+                                    tempo = 0.125, 
+                                    side = "mid",
+                                    mul = 0.6)
+        elif which == 2:
+            self.gen = algo.AlgoGen(notes = "low", 
+                                    tempo = random.choice([1,3]), 
+                                    side = "mid",
+                                    mul = 0.8)
+        elif which == 3:
+            self.gen = algo.AlgoGen(tempo = random.choice([.2,.4]))
+        elif which == 4:
+            self.gen = algo.AlgoGen(notes = "loop",
+                                    tempo = random.choice([0.125,0.25]), 
+                                    side = "right", 
+                                    mul = 0.6)
 
-def gen2():
-    gen02 = algo.AlgoGen(notes = "low", 
-                         tempo = random.choice([2,4]), 
-                         side = "mid",
-                         mul = 0.8)
-    genFX02 = effe.FxMixer(gen02)
-    return genFX02
+        self.genFX = effe.FxMixer(self.gen)
+        Sig.__init__(self,self.genFX,mul,add)
 
-def gen3():
-    gen03 = algo.AlgoGen(tempo = random.choice([.2,.4]))
-    genFX03 = effe.FxMixer(gen03)
-    return genFX03
+    def changeFXs(self):
+        self.genFX.changeFXs()
 
-def gen4():
-    gen04 = algo.AlgoGen(notes = "loop",
-                        tempo = random.choice([0.125,0.25]), 
-                        side = "right", 
-                        mul = 0.6)
-    genFX04 = effe.FxMixer(gen04)
-    genOut04 = Compress(genFX04,-40,ratio = 20)
-    return genOut04
+    def newNotesMels(self):
+        self.gen.newLoops()
 
 if cons.NUMGENS == 1:
-    outA = gen1()
+    outA = Gens(1)
     gensTot = Compress(outA,-40,ratio = 20)
 elif cons.NUMGENS == 2:
-    outA = gen1()
-    outB = gen2()
+    outA = Gens(1)
+    outB = Gens(2)
     genOut01 = Compress(outA,-40,ratio = 20)
     genOut02 = Compress(outB,-40,ratio = 20)
     gensTot = genOut01 + genOut02
 elif cons.NUMGENS == 3:
-    outA = gen1()
-    outB = gen2()
-    outC = gen3()
+    outA = Gens(1)
+    outB = Gens(2)
+    outC = Gens(3)
     genOut01 = Compress(outA,-40,ratio = 20)
     genOut02 = Compress(outB,-40,ratio = 20)
     genOut03 = Compress(outC,-40,ratio = 20)
     gensTot = genOut01 + genOut02 + genOut03
 elif cons.NUMGENS == 4:
-    outA = gen1()
-    outB = gen2()
-    outC = gen3()
-    outC = gen4()
+    outA = Gens(1)
+    outB = Gens(2)
+    outC = Gens(3)
+    outC = Gens(4)
     genOut01 = Compress(outA,-40,ratio = 20)
     genOut02 = Compress(outB,-40,ratio = 20)
     genOut03 = Compress(outC,-40,ratio = 20)
     genOut04 = Compress(outD,-40,ratio = 20)
     gensTot = genOut01 + genOut02 + genOut03 + genOut04
 
-if cons.PLAYMODE == "Demo":
-    mainSynthEnv = Fader(4,4,cons.DEMOTIME)
-    def playMainSynthEnv():
-        mainSynthEnv.play()
-    patMainSynthEnv = Pattern(playMainSynthEnv,cons.DEMOTIME).play()
-
-elif cons.PLAYMODE == "Forever":
-    mainSynthEnv = 1.
-
-gensOutput = ButHP(gensTot,vari.outFiltFreqSig, mul = mainSynthEnv).out()
 
 
 # to update the effects as the piece goes by, thus slowly changing the timbre of 
@@ -130,9 +120,83 @@ patChFXs = Pattern(chFXs,vari.fxChangeTime).play()
 
 
 
-# to play the sines "twinkles" while the voice is talking
+# to change the melodies being played in Demo mode
+def chLoopsDemo(num = cons.NUMGENS):
+    print "changing Loops Demo"
+    # first change available notes
+    notes.newNotes()
+    vari.notesList = notes.getListNotes()
+    # then generate new melodies
+    if num == 1:
+        outA.newNotesMels()
+    elif num == 2:
+        outA.newNotesMels()
+        outB.newNotesMels()
+    elif num == 3:
+        outA.newNotesMels()
+        outB.newNotesMels()
+        outC.newNotesMels()
+    elif num == 4:
+        outA.newNotesMels()
+        outB.newNotesMels()
+        outC.newNotesMels()
+        outD.newNotesMels()
+    vari.mainTempoInit = random.uniform(0.2,4)
+
+# to change notes and melody in manual mode
+isVoicePlaying = 0
+
+def chLoopsManual(num = cons.NUMGENS):
+    if vari.currentCCSnd > 110 and isVoicePlaying == 0:
+        print "changing Loops Manual"
+
+        # first change available notes
+        notes.newNotes()
+        vari.notesList = notes.getListNotes()
+        # then generate new melodies
+        if num == 1:
+            outA.newNotesMels()
+        elif num == 2:
+            outA.newNotesMels()
+            outB.newNotesMels()
+        elif num == 3:
+            outA.newNotesMels()
+            outB.newNotesMels()
+            outC.newNotesMels()
+        elif num == 4:
+            outA.newNotesMels()
+            outB.newNotesMels()
+            outC.newNotesMels()
+            outD.newNotesMels()
+        # then change global tempo
+        vari.mainTempoInit = random.uniform(0.2,4)
+        isVoicePlaying = 1
+    elif vari.currentCCSnd <= 110 and isVoicePlaying == 1:
+        isVoicePlaying = 0
+
+# applies the patterns depending on the playmode
+if cons.PLAYMODE == "Demo":
+    mainSynthEnv = Fader(cons.DEMOSLOPE,cons.DEMOSLOPE,cons.DEMOTIME)
+    def playMainSynthEnv():
+        mainSynthEnv.play()
+    patMainSynthEnv = Pattern(playMainSynthEnv,cons.DEMOTIME).play()
+    patChLoops = Pattern(chLoopsDemo, cons.DEMOTIME).play()
+
+elif cons.PLAYMODE == "Manual":
+    mainSynthEnv = 1.
+    patChLoops = Pattern(chLoopsManual, 1).play()
+
+
+
+# outputs the synths
+gensOutput = ButHP(gensTot,vari.outFiltFreqSig, mul = mainSynthEnv).out()
+
+
+
+### to play the sines "twinkles" while the voice is talking
 sine = synt.SineGen()
 sine.out()
+
 
 
 ### to play sound objects
@@ -141,17 +205,6 @@ if cons.NUMSAMPS == 1:
 elif cons.NUMSAMPS == 2:
     samp1 = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]
     samp2 = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]
-
-
-# to change the notes for the pads
-def chNotes():
-    notes.newNotes()
-    print 'NOTES'
-
-
-noteUpdate = Pattern(chNotes, 20).play()
-
-
 
 
 

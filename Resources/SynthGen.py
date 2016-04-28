@@ -243,37 +243,34 @@ class SynthGen(Sig):
         Generates a new envelope from a walk from the previous one and trigs it.
 
         '''
-        if vari.randEnvSynth < 50:
-            pass
+        if self.envDur<3:
+            self.attackT += random.random()/3*walk-0.5
+            if self.attackT <= 0.:
+                self.attackT = 0.1
+            self.decayT += random.uniform(-0.2*walk,0.2*walk)/3
+            if self.decayT <= 0.:
+                self.decayT = 0.1
+            self.releaseT += random.random()/3*walk-0.5
+            if self.releaseT <= 0.:
+                self.releaseT = 0.1        
         else:
-            if self.envDur<3:
-                self.attackT += random.random()/3*walk-0.5
-                if self.attackT <= 0.:
-                    self.attackT = 0.1
-                self.decayT += random.uniform(-0.2*walk,0.2*walk)/3
-                if self.decayT <= 0.:
-                    self.decayT = 0.1
-                self.releaseT += random.random()/3*walk-0.5
-                if self.releaseT <= 0.:
-                    self.releaseT = 0.1        
-            else:
-                self.attackT += random.random()*walk-0.5
-                if self.attackT <= 0.:
-                    self.attackT = 0.1
-                self.decayT += random.uniform(-0.2*walk,0.2*walk)
-                if self.decayT <= 0.:
-                    self.decayT = 0.1
-                self.releaseT += random.random()*walk-0.5
-                if self.releaseT <= 0.:
-                    self.releaseT = 0.1        
-            self.dura = self.attackT + self.decayT + self.releaseT + self.envDur/4
-            if self.dura > self.envDur:
-                self.dura = self.envDur
-            self.env.setAttack(self.attackT)
-            self.env.setDecay(self.decayT)
-            self.env.setRelease(self.releaseT)
-            self.env.setDur(self.dura)
-            self.env.play()
+            self.attackT += random.random()*walk-0.5
+            if self.attackT <= 0.:
+                self.attackT = 0.1
+            self.decayT += random.uniform(-0.2*walk,0.2*walk)
+            if self.decayT <= 0.:
+                self.decayT = 0.1
+            self.releaseT += random.random()*walk-0.5
+            if self.releaseT <= 0.:
+                self.releaseT = 0.1        
+        self.dura = self.attackT + self.decayT + self.releaseT + self.envDur/4
+        if self.dura > self.envDur:
+            self.dura = self.envDur
+        self.env.setAttack(self.attackT)
+        self.env.setDecay(self.decayT)
+        self.env.setRelease(self.releaseT)
+        self.env.setDur(self.dura)
+        self.env.play()
 
     def setNewFreq(self,newFreq):
         freq = newFreq
@@ -305,11 +302,6 @@ class SineGen(Sig):
         self.b.mul = vari.sineGenMul
         self.patFreq.time = vari.sineTempo
         self.d.feedback = vari.sineRevMul
-
-# s.gui(locals())
-
-
-
 
 
 
