@@ -21,7 +21,7 @@ _Manual_ change les mélodies et joue un poème seulement lorsque la valeur
 MIDI CC dépasse 110.  Lorsqu'un poème est joué, il ne peut y en avoir un autre
 avant 50 secondes du début du précédent.
 Il faut également spécifier le nombre d'instances de générateurs de synthèse, 
-NUMGENS (entre 0 et 4, selon le cpu disponible), et le nombre d'instance de 
+NUMGENS (entre 0 et 4, selon le cpu disponible), et le nombre d'instances de 
 générateurs d'échantillons, NUMSAMPS (entre 0 et 5, nombre un peu arbitraire de 
 ma part).
 
@@ -44,7 +44,7 @@ Les appels sont faits comme suit:
   
 MuPoSy.py -> Engine.py -> Algo.py -> SynthGen.py -> Effects.py  
        |                                              |------> SamplePlay.py
-       |  
+       
        |-->Voix.py  
        |-->Interactivity.py  
        |-->utilities.py  
@@ -54,13 +54,13 @@ MuPoSy.py -> Engine.py -> Algo.py -> SynthGen.py -> Effects.py
 Ce diagramme simplifié ne représente pas les appels inter-modules.
 
 
-Problèmes non résolu:
+Problèmes non résolus:
 --------------------
 
 Il arrive que le son coupe de façon imprévisible alors que tout semble 
 continuer normalement si l'on en croit les messages qui continuent de défiler.  
 Il semblerait qu'une "explosion" du niveau sonore est à la source du problème.  
-De multiples testes ne m'ont pas encore permis d'en isoler la cause exacte, mais 
+De multiples tests ne m'ont pas encore permis d'en isoler la cause exacte, mais 
 le problème vient des générateurs de synthèse.  Des objets Clip sont utilisés 
 afin d'éviter un son très fort soudain qui est le responsable de la situation.  
 Le niveau saute brusquement à infini...  Un problème similaire avait été trouvé 
@@ -68,8 +68,8 @@ lorsqu'un échantillon n'avait pas eu le temps de charger complètement dans une
 table et que cette table était appelée pour être lue. Outre le son qui coupe, il
 ne semble pas y avoir d'autre conséquence à ce problème au niveau du programme, 
 qui n'affiche pas de messages d'erreur.
-De plus, certains générateurs de synthèse semble produire des clicks à cause
-des modulations qui leurs sont appliqués.  Là aussi, des recherches en 
+De plus, certains générateurs de synthèse semblent produire des clicks à cause
+des modulations qui leur sont appliqués.  Là aussi, des recherches en 
 profondeur devront être faites afin d'en trouver la cause.  Se pourrait-il que
 ces deux problèmes soient reliés?
 
@@ -85,7 +85,7 @@ ainsi que de la librairie pyo.  Le projet MuPoSy élaboré n'était somme toute
 qu'un prétexte à l'exploration de divers procédés.  Par exemple, beaucoup de
 temps a été investi dans la recherche timbrale, et peu dans l'élaboration d'une
 trame musicale réellement intéressante.  Ce projet m'aura aussi permis de me
-construire un début de banque d'objets qui pourront être réutilisé 
+construire un début de banque d'objets qui pourront être réutilisés 
 ultérieurement, comme tout ce qui concerne le Text-To-Speech, les générateurs 
 de synthétiseurs, les effets, certains utilitaires...  
 De grandes parties devraient toutefois être complètement réécrites pour rendre 
@@ -96,7 +96,7 @@ trop de problématiques à la fois: génération de synthèse sonore évolutive,
 lecture d'échantillons évolutive, interactivité, musique algorithmique, 
 exploration de contenu littéraire et génération de TTS en temps réel, et j'en
 passe...  Cet éparpillement aura soulevé un grand nombre de difficultés 
-simultanément, ce qui a résulté en beaucoup de débuggage couteux en temps.  
+simultanément, ce qui a résulté en beaucoup de débogage couteux en temps.  
 Le prochain projet devrait être beaucoup plus spécifique et moins généraliste.
 
 
