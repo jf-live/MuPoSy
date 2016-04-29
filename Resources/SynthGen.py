@@ -30,6 +30,8 @@ class SynthGen(Sig):
         elif inst == "low":
             self.randChooser = int(random.triangular(0,5, random.randint(0,5)))
 
+        # Sines to slowly modify the tone over time
+        self.mainMod = [Sine(random.uniform(0.001,0.05), random.random()).range(0,1) for i in range(5)]
         #0@5: LFO Saw Up, SawDown, Square, Triangle, Pulse, Bipolar Pulse
         #6: BLIT
         #7: RCOsc
@@ -40,117 +42,117 @@ class SynthGen(Sig):
 
         # assign randomly a snd gen
         if self.randChooser <= 5:
-            self.modifLFO = LFO(random.uniform(0.25,1.5)*(self.mod+0.001),
-                                random.uniform(0.2,0.8),
+            self.modifLFO = LFO(random.uniform(0.25,1.5)*(self.mod+0.001)*self.mainMod[0],
+                                random.uniform(0.2,0.8)*self.mainMod[1],
                                 random.randint(0,7),
                                 1,0)
             self.modifLFOSig = SigTo(self.modifLFO,0.2)
-            self.modifMult = LFO(random.uniform(0.25,1)*(self.multMod+0.001),
-                                 random.uniform(0.2,0.8),
+            self.modifMult = LFO(random.uniform(0.25,1)*(self.multMod+0.001)*self.mainMod[2],
+                                 random.uniform(0.2,0.8)*self.mainMod[3],
                                  random.randint(0,7),
                                  .8,
                                  .2)
             if self.wide == True:
                 self.sig = LFO([freq*random.uniform(0.98,1.02) for i in range(cons.NUMOUTS)],
-                               self.modifLFOSig,
+                               self.modifLFOSig*self.mainMod[4],
                                self.randChooser, self.modifMult*self.mulInter)
             else:
                 self.sig = LFO(freq,
-                           self.modifLFOSig,
+                           self.modifLFOSig*self.mainMod[4],
                            self.randChooser, self.modifMult*self.mulInter)
 
         elif self.randChooser == 6:
-            self.modifBLIT = LFO(random.uniform(0.25,1.5)*(self.mod+0.001),
-                                 random.uniform(0.2,0.8),
+            self.modifBLIT = LFO(random.uniform(0.25,1.5)*(self.mod+0.001)*self.mainMod[0],
+                                 random.uniform(0.2,0.8)*self.mainMod[1],
                                  random.randint(0,7),
-                                 random.randint(5,10),
+                                 random.randint(3,5),
                                  random.randint(1,8)*(self.mod+0.001))
             self.modifBLITSig = SigTo(self.modifBLIT,0.25)
-            self.modifMult = LFO(random.uniform(0.25,1)*(self.multMod+0.001),
-                                 random.uniform(0.2,0.8),
+            self.modifMult = LFO(random.uniform(0.25,1)*(self.multMod+0.001)*self.mainMod[2],
+                                 random.uniform(0.2,0.8)*self.mainMod[3],
                                  random.randint(0,7),
                                  .8,
                                  .2)
-            self.sig = Blit(freq,self.modifBLITSig, self.modifMult*self.mulInter)
+            self.sig = Blit(freq,self.modifBLITSig, self.modifMult*self.mulInter*self.mainMod[4])
 
         elif self.randChooser == 7:
-            self.modifRC = LFO(random.uniform(0.25,1.5)*(self.mod+0.001),
-                               random.uniform(0.2,0.8),
+            self.modifRC = LFO(random.uniform(0.25,1.5)*(self.mod+0.001)*self.mainMod[0],
+                               random.uniform(0.2,0.8)*self.mainMod[1],
                                random.randint(0,7),
                                1,
                                0)
             self.modifRCSig = SigTo(self.modifRC,0.2)
-            self.modifMult = LFO(random.uniform(0.25,1)*(self.multMod+0.001),
-                                 random.uniform(0.2,0.8),
+            self.modifMult = LFO(random.uniform(0.25,1)*(self.multMod+0.001)*self.mainMod[2],
+                                 random.uniform(0.2,0.8)*self.mainMod[3],
                                  random.randint(0,7),
                                  .8,
                                  .2)
-            self.sig = RCOsc(freq, self.modifRCSig, self.modifMult*self.mulInter)
+            self.sig = RCOsc(freq, self.modifRCSig, self.modifMult*self.mulInter*self.mainMod[4])
 
         elif self.randChooser == 8:
-            self.modifSineLoop = LFO(random.uniform(0.25,1)*(self.mod+0.001),
-                                     random.uniform(0.2,0.8),
+            self.modifSineLoop = LFO(random.uniform(0.25,1)*(self.mod+0.001)*self.mainMod[0],
+                                     random.uniform(0.2,0.8)*self.mainMod[1],
                                      random.randint(0,7),
                                      random.uniform(0.01,.45),
                                      0)
             self.modifSineLoopSig = SigTo(self.modifSineLoop,0.2)
-            self.modifMult = LFO(random.uniform(0.25,1.5)*(self.multMod+0.001),
-                                 random.uniform(0.2,0.8),
+            self.modifMult = LFO(random.uniform(0.25,1.5)*(self.multMod+0.001)*self.mainMod[2],
+                                 random.uniform(0.2,0.8)*self.mainMod[3],
                                  random.randint(0,7),
                                  .8,
                                  .2)
-            self.sig = SineLoop(freq,self.modifSineLoopSig, self.modifMult*self.mulInter)
+            self.sig = SineLoop(freq,self.modifSineLoopSig, self.modifMult*self.mulInter*self.mainMod[4])
 
         elif self.randChooser == 9:
-            self.modifCFMRatio = LFO(random.uniform(0.01,0.2)*(self.mod+0.001),
-                                     random.uniform(0.2,0.8),
+            self.modifCFMRatio = LFO(random.uniform(0.01,0.2)*(self.mod+0.001)*self.mainMod[0],
+                                     random.uniform(0.2,0.8)*self.mainMod[1],
                                      random.randint(0,7),
                                      random.uniform(0.1,1),
                                      0)
             self.modifCFMRatioSig = SigTo(self.modifCFMRatio,0.2)
-            self.modifCFMIndex1 = LFO(random.uniform(0.01,0.2)*(self.mod+0.001),
-                                      random.uniform(0.2,0.8),
+            self.modifCFMIndex1 = LFO(random.uniform(0.01,0.2)*(self.mod+0.001)*self.mainMod[2],
+                                      random.uniform(0.2,0.8)*self.mainMod[3],
                                       random.randint(0,7),
                                       random.uniform(1,10),
                                       0)
             self.modifCFMIndex1Sig = SigTo(self.modifCFMIndex1,0.2)
-            self.modifCFMIndex2 = LFO(random.uniform(0.01,0.2)*(self.mod+0.001),
-                                      random.uniform(0.2,0.8),
+            self.modifCFMIndex2 = LFO(random.uniform(0.01,0.2)*(self.mod+0.001)*self.mainMod[3],
+                                      random.uniform(0.2,0.8)*self.mainMod[2],
                                       random.randint(0,7),
                                       random.uniform(1,10),
                                       0)
             self.modifCFMIndex2Sig = SigTo(self.modifCFMIndex2,0.2)
-            self.modifMult = LFO(random.uniform(0.25,1.5)*(self.multMod+0.001),
-                                 random.uniform(0.2,0.8),
+            self.modifMult = LFO(random.uniform(0.25,1.5)*(self.multMod+0.001)*self.mainMod[1],
+                                 random.uniform(0.2,0.8)*self.mainMod[0],
                                  random.randint(0,7),
                                  .8,
                                  .2)
             self.sig = CrossFM(freq, 
-                               self.modifCFMRatioSig,
-                               self.modifCFMIndex1Sig,
+                               self.modifCFMRatioSig*self.mainMod[2],
+                               self.modifCFMIndex1Sig*self.mainMod[3],
                                self.modifCFMIndex2Sig, self.modifMult*self.mulInter)
 
         elif self.randChooser == 10:
-            self.modifFMRatio = LFO(random.uniform(0.01,0.2)*(self.mod+0.001),
-                                    random.uniform(0.2,0.8),
+            self.modifFMRatio = LFO(random.uniform(0.01,0.2)*(self.mod+0.001)*self.mainMod[0],
+                                    random.uniform(0.2,0.8)*self.mainMod[1],
                                     random.randint(0,7),
                                     random.uniform(0.1,1),
                                     0)
             self.modifFMRatioSig = SigTo(self.modifFMRatio,0.2)
-            self.modifFMIndex = LFO(random.uniform(0.01,0.2)*(self.mod+0.001),
-                                    random.uniform(0.2,0.8),
+            self.modifFMIndex = LFO(random.uniform(0.01,0.2)*(self.mod+0.001)*self.mainMod[2],
+                                    random.uniform(0.2,0.8)*self.mainMod[3],
                                     random.randint(0,7),
                                     random.uniform(1,10),
                                     0)
             self.modifFMIndexSig = SigTo(self.modifFMIndex,0.2)
-            self.modifMult = LFO(random.uniform(0.25,1.5)*(self.multMod+0.001),
+            self.modifMult = LFO(random.uniform(0.25,1.5)*(self.multMod+0.001)*self.mainMod[4],
                                  random.uniform(0.2,0.8),
                                  random.randint(0,7),
                                  .8,
                                  .2)
             self.sig = FM(freq, 
-                          self.modifFMRatioSig,
-                          self.modifFMIndexSig, self.modifMult*self.mulInter)
+                          self.modifFMRatioSig*self.mainMod[1],
+                          self.modifFMIndexSig*self.mainMod[2], self.modifMult*self.mulInter)
 
         elif self.randChooser == 11:
             self.tableList = [(0.,0)]+ \
@@ -160,40 +162,40 @@ class SynthGen(Sig):
                              [(8191,0)]
             self.tableList.sort()
             self.table = LogTable(self.tableList)
-            self.modifOscLoop = LFO(random.uniform(0.25,1)*(self.mod+0.001),
-                                    random.uniform(0.2,0.8),
+            self.modifOscLoop = LFO(random.uniform(0.25,1)*(self.mod+0.001)*self.mainMod[0],
+                                    random.uniform(0.2,0.8)*self.mainMod[1],
                                     random.randint(0,7),
                                     random.uniform(0.01,.05),
                                     0)
             self.modifOscLoopSig = SigTo(self.modifOscLoop,0.2)
-            self.modifMult = LFO(random.uniform(0.25,1)*(self.multMod+0.001),
-                                 random.uniform(0.2,0.8),
+            self.modifMult = LFO(random.uniform(0.25,1)*(self.multMod+0.001)*self.mainMod[2],
+                                 random.uniform(0.2,0.8)*self.mainMod[3],
                                  random.randint(0,7),
                                  .6,
                                  .2)
             self.sig = OscLoop(self.table, 
                                self.freq, 
-                               self.modifOscLoopSig, self.modifMult*self.mulInter)
+                               self.modifOscLoopSig*self.mainMod[4], self.modifMult*self.mulInter)
 
         elif self.randChooser == 12:
             self.tableList = [1.]+ \
                              [random.triangular(0.,.8) for \
                              i in range(random.randint(2,8))]
             self.table = HarmTable(self.tableList)
-            self.modifOscLoop = LFO(random.uniform(0.25,1)*(self.mod+0.001),
-                                    random.uniform(0.2,0.8),
+            self.modifOscLoop = LFO(random.uniform(0.25,1)*(self.mod+0.001)*self.mainMod[0],
+                                    random.uniform(0.2,0.8)*self.mainMod[1],
                                     random.randint(0,7),
                                     random.uniform(0.01,.05),
                                     0)
             self.modifOscLoopSig = SigTo(self.modifOscLoop,0.2)
-            self.modifMult = LFO(random.uniform(0.25,1.5)*(self.multMod+0.001),
-                                 random.uniform(0.2,0.8),
+            self.modifMult = LFO(random.uniform(0.25,1.5)*(self.multMod+0.001)*self.mainMod[2],
+                                 random.uniform(0.2,0.8)*self.mainMod[3],
                                  random.randint(0,7),
                                  .6,
                                  .2)
             self.sig = OscLoop(self.table, 
                                self.freq, 
-                               self.modifOscLoopSig, self.modifMult*self.mulInter)
+                               self.modifOscLoopSig*self.mainMod[4], self.modifMult*self.mulInter)
 
         elif self.randChooser == 13:
             self.tableList = [(0.,0)]+ \
@@ -207,20 +209,20 @@ class SynthGen(Sig):
                              i in range(int(random.triangular(5,20,10)))]+[(8191,0)]
             self.tableList.sort()
             self.table = LinTable(self.tableList)
-            self.modifOscLoop = LFO(random.uniform(0.25,1)*(self.mod+0.001),
-                                    random.uniform(0.2,0.8),
+            self.modifOscLoop = LFO(random.uniform(0.25,1)*(self.mod+0.001)*self.mainMod[0],
+                                    random.uniform(0.2,0.8)*self.mainMod[1],
                                     random.randint(0,7),
                                     random.uniform(0.01,.05),
                                     0)
             self.modifOscLoopSig = SigTo(self.modifOscLoop,0.2)
-            self.modifMult = LFO(random.uniform(0.25,1.5)*(self.multMod+0.001),
-                                 random.uniform(0.2,0.8),
+            self.modifMult = LFO(random.uniform(0.25,1.5)*(self.multMod+0.001)*self.mainMod[2],
+                                 random.uniform(0.2,0.8)*self.mainMod[3],
                                  random.randint(0,7),
                                  .6,
                                  .2)
             self.sig = OscLoop(self.table, 
                                self.freq, 
-                               self.modifOscLoopSig, self.modifMult*self.mulInter)
+                               self.modifOscLoopSig*self.mainMod[4], self.modifMult*self.mulInter)
 
         self.sigForPan = Clip(self.sig, mul = 0.8)
         self.forPan = Sine(random.uniform(0.1,1), phase = random.random())
@@ -235,7 +237,6 @@ class SynthGen(Sig):
             self.forPan.add = 0.9          
         self.sigPanned = Pan(self.sigForPan,outs=cons.NUMOUTS, pan=self.forPan, spread = 0.1)
         self.sigForOut = self.sigPanned.mix(cons.NUMOUTS)
-
         Sig.__init__(self, self.sigForOut, mul=mul, add=add)
 
     def repeatJit(self, walk = 1):

@@ -8,35 +8,38 @@
 import os
 
 #### Play Mode
-# "Demo" means the melody will change every 20 seconds
-# "Forever" means the melody will always be kind of the same
-PLAYMODE = "Demo"
-# PLAYMODE = "Manual"
+# "Demo" means the melody will change every 40 seconds, and a poem will be read 
+#   every 
+# "Manual" means the melody will always be kind of the same
 
-# If demo mode is selected, setup the time in seconds for each demo here
+# PLAYMODE = "Demo"
+PLAYMODE = "Manual"
+
+# If demo mode is selected, setup the time in seconds for each melody to be 
+#   demoed here.
 DEMOTIME = 40
 DEMOSLOPE = 7 # ramp time for the main synth envelope
-
-#### How many outputs to use
-NUMOUTS = 2
 
 #### How many SynthGen and Samples streams to create
 NUMGENS = 2
 NUMSAMPS = 1
 
+#### How many outputs to use - NOT REALLY IMPLEMENTED
+NUMOUTS = 2
+
 ##To prevent out of range assignation
 if NUMGENS > 4:
     print 'WARNING: Max NUMGENS amount is 4.  NUMGENS set to 4.'
     NUMGENS = 4
-elif NUMGENS < 1:
-    print 'WARNING: Min NUMGENS amount is 1.  NUMGENS set to 1.'
+elif NUMGENS < 0:
+    print 'WARNING: Min NUMGENS amount is 0.  NUMGENS set to 0.'
     self.modu = 1
-if NUMSAMPS > 2:
-    print 'WARNING: Max NUMSAMPS amount is 7.  NUMSAMPS set to 7.'
-    NUMSAMPS = 2
-elif NUMSAMPS < 1:
-    print 'WARNING: Min NUMSAMPS amount is 1.  NUMSAMPS set to 1.'
-    NUMSAMPS = 1
+if NUMSAMPS > 5:
+    print 'WARNING: Max NUMSAMPS amount is 5.  NUMSAMPS set to 5.'
+    NUMSAMPS = 5
+elif NUMSAMPS < 0:
+    print 'WARNING: Min NUMSAMPS amount is 0.  NUMSAMPS set to 0.'
+    NUMSAMPS = 0
 
 
 #### Path to the 'Resources' folder

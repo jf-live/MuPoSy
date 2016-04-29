@@ -22,14 +22,13 @@ import constants as cons
 
 s = Server().boot()
 s.start()
-
-a = CosTable([(0,0), (700,1), (7400,1), (8191,0)])
-a.view()
-
-
-
-
-
+snd = SndTable(SNDS_PATH + "/transparent.aif")
+env = HannTable()
+pos = Phasor(snd.getRate()*.25, 0, snd.getSize())
+dur = Noise(.001, .1)
+g = Granulator(snd, env, [1, 1.001], pos, dur, 24, mul=.1)
+g1 = Disto(g)
+gOut = g1.out()
 s.gui(locals())
 
 

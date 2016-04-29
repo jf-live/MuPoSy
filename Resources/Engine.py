@@ -67,89 +67,64 @@ class Gens(Sig):
     def newNotesMels(self):
         self.gen.newLoops()
 
-if cons.NUMGENS == 1:
-    outA = Gens(1)
-    gensTot = Compress(outA,-40,ratio = 20)
-elif cons.NUMGENS == 2:
-    outA = Gens(1)
-    outB = Gens(2)
-    genOut01 = Compress(outA,-40,ratio = 20)
-    genOut02 = Compress(outB,-40,ratio = 20)
-    gensTot = genOut01 + genOut02
-elif cons.NUMGENS == 3:
-    outA = Gens(1)
-    outB = Gens(2)
-    outC = Gens(3)
-    genOut01 = Compress(outA,-40,ratio = 20)
-    genOut02 = Compress(outB,-40,ratio = 20)
-    genOut03 = Compress(outC,-40,ratio = 20)
-    gensTot = genOut01 + genOut02 + genOut03
-elif cons.NUMGENS == 4:
-    outA = Gens(1)
-    outB = Gens(2)
-    outC = Gens(3)
-    outC = Gens(4)
-    genOut01 = Compress(outA,-40,ratio = 20)
-    genOut02 = Compress(outB,-40,ratio = 20)
-    genOut03 = Compress(outC,-40,ratio = 20)
-    genOut04 = Compress(outD,-40,ratio = 20)
-    gensTot = genOut01 + genOut02 + genOut03 + genOut04
+if cons.NUMGENS > 0:
+
+    if cons.NUMGENS == 1:
+        outA = Gens(1)
+        gensTot = Compress(outA,-30,ratio = 20)
+    elif cons.NUMGENS == 2:
+        outA = Gens(1)
+        outB = Gens(2)
+        genOut01 = Compress(outA,-30,ratio = 20)
+        genOut02 = Compress(outB,-30,ratio = 20)
+        gensTot = genOut01 + genOut02
+    elif cons.NUMGENS == 3:
+        outA = Gens(1)
+        outB = Gens(2)
+        outC = Gens(3)
+        genOut01 = Compress(outA,-30,ratio = 20)
+        genOut02 = Compress(outB,-30,ratio = 20)
+        genOut03 = Compress(outC,-30,ratio = 20)
+        gensTot = genOut01 + genOut02 + genOut03
+    elif cons.NUMGENS == 4:
+        outA = Gens(1)
+        outB = Gens(2)
+        outC = Gens(3)
+        outC = Gens(4)
+        genOut01 = Compress(outA,-30,ratio = 20)
+        genOut02 = Compress(outB,-30,ratio = 20)
+        genOut03 = Compress(outC,-30,ratio = 20)
+        genOut04 = Compress(outD,-30,ratio = 20)
+        gensTot = genOut01 + genOut02 + genOut03 + genOut04
 
 
 
-# to update the effects as the piece goes by, thus slowly changing the timbre of 
-#   the sound gens
-def chFXs(num = cons.NUMGENS):
-    print "changing FXs"
-    if num == 1:
-        outA.changeFXs()
-    elif num == 2:
-        outA.changeFXs()
-        outB.changeFXs()
-    elif num == 3:
-        outA.changeFXs()
-        outB.changeFXs()
-        outC.changeFXs()
-    elif num == 4:
-        outA.changeFXs()
-        outB.changeFXs()
-        outC.changeFXs()
-        outD.changeFXs()
+    # to update the effects as the piece goes by, thus slowly changing the timbre of 
+    #   the sound gens
+    def chFXs(num = cons.NUMGENS):
+        print "changing FXs"
+        if num == 1:
+            outA.changeFXs()
+        elif num == 2:
+            outA.changeFXs()
+            outB.changeFXs()
+        elif num == 3:
+            outA.changeFXs()
+            outB.changeFXs()
+            outC.changeFXs()
+        elif num == 4:
+            outA.changeFXs()
+            outB.changeFXs()
+            outC.changeFXs()
+            outD.changeFXs()
 
-patChFXs = Pattern(chFXs,vari.fxChangeTime).play()
+    patChFXs = Pattern(chFXs,vari.fxChangeTime).play()
 
 
 
-# to change the melodies being played in Demo mode
-def chLoopsDemo(num = cons.NUMGENS):
-    print "changing Loops Demo"
-    # first change available notes
-    notes.newNotes()
-    vari.notesList = notes.getListNotes()
-    # then generate new melodies
-    if num == 1:
-        outA.newNotesMels()
-    elif num == 2:
-        outA.newNotesMels()
-        outB.newNotesMels()
-    elif num == 3:
-        outA.newNotesMels()
-        outB.newNotesMels()
-        outC.newNotesMels()
-    elif num == 4:
-        outA.newNotesMels()
-        outB.newNotesMels()
-        outC.newNotesMels()
-        outD.newNotesMels()
-    vari.mainTempoInit = random.uniform(0.2,4)
-
-# to change notes and melody in manual mode
-isVoicePlaying = 0
-
-def chLoopsManual(num = cons.NUMGENS):
-    if vari.currentCCSnd > 110 and isVoicePlaying == 0:
-        print "changing Loops Manual"
-
+    # to change the melodies being played in Demo mode
+    def chLoopsDemo(num = cons.NUMGENS):
+        print "changing Loops Demo"
         # first change available notes
         notes.newNotes()
         vari.notesList = notes.getListNotes()
@@ -168,28 +143,55 @@ def chLoopsManual(num = cons.NUMGENS):
             outB.newNotesMels()
             outC.newNotesMels()
             outD.newNotesMels()
-        # then change global tempo
-        vari.mainTempoInit = random.uniform(0.2,4)
-        isVoicePlaying = 1
-    elif vari.currentCCSnd <= 110 and isVoicePlaying == 1:
-        isVoicePlaying = 0
+        vari.mainTempoInit = random.uniform(0.2,0.5)
 
-# applies the patterns depending on the playmode
-if cons.PLAYMODE == "Demo":
-    mainSynthEnv = Fader(cons.DEMOSLOPE,cons.DEMOSLOPE,cons.DEMOTIME)
-    def playMainSynthEnv():
-        mainSynthEnv.play()
-    patMainSynthEnv = Pattern(playMainSynthEnv,cons.DEMOTIME).play()
-    patChLoops = Pattern(chLoopsDemo, cons.DEMOTIME).play()
+    # to change notes and melody in manual mode
 
-elif cons.PLAYMODE == "Manual":
-    mainSynthEnv = 1.
-    patChLoops = Pattern(chLoopsManual, 1).play()
+    def chLoopsManual(num = cons.NUMGENS):
+        if vari.currentCCSnd > 110 and vari.isVoicePlaying2 == 0:
+            print "changing Loops Manual"
+
+            # first change available notes
+            notes.newNotes()
+            vari.notesList = notes.getListNotes()
+            # then generate new melodies
+            if num == 1:
+                outA.newNotesMels()
+            elif num == 2:
+                outA.newNotesMels()
+                outB.newNotesMels()
+            elif num == 3:
+                outA.newNotesMels()
+                outB.newNotesMels()
+                outC.newNotesMels()
+            elif num == 4:
+                outA.newNotesMels()
+                outB.newNotesMels()
+                outC.newNotesMels()
+                outD.newNotesMels()
+            # then change global tempo
+            vari.mainTempoInit = random.uniform(0.2,0.5)
+            vari.isVoicePlaying2 = 1
+            
+        elif vari.currentCCSnd <= 110 and vari.isVoicePlaying2 == 1:
+            vari.isVoicePlaying2 = 0
+
+    # applies the patterns depending on the playmode
+    if cons.PLAYMODE == "Demo":
+        mainSynthEnv = Fader(cons.DEMOSLOPE,cons.DEMOSLOPE,cons.DEMOTIME)
+        def playMainSynthEnv():
+            mainSynthEnv.play()
+        patMainSynthEnv = Pattern(playMainSynthEnv,cons.DEMOTIME).play()
+        patChLoops = Pattern(chLoopsDemo, cons.DEMOTIME).play()
+
+    elif cons.PLAYMODE == "Manual":
+        mainSynthEnv = 1.
+        patChLoops = Pattern(chLoopsManual, 1).play()
 
 
 
-# outputs the synths
-gensOutput = ButHP(gensTot,vari.outFiltFreqSig, mul = mainSynthEnv).out()
+    # outputs the synths
+    gensOutput = ButHP(gensTot,vari.outFiltFreqSig, mul = mainSynthEnv).out()
 
 
 
@@ -200,11 +202,9 @@ sine.out()
 
 
 ### to play sound objects
-if cons.NUMSAMPS == 1:
-    samp1 = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]
-elif cons.NUMSAMPS == 2:
-    samp1 = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]
-    samp2 = [algo.AlgoSamp() for i in range(cons.NUMSAMPS)]
+
+samp = [[algo.AlgoSamp() for i in range(cons.NUMSAMPS)] for i in range(cons.NUMSAMPS)]
+
 
 
 

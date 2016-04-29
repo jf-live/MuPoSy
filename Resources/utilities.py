@@ -20,8 +20,8 @@ random.seed(rSeed)
 
 
 # Trigger generator for event detection
-eventMetVoix = Metro(0.05).play()
-eventMetSnd = Metro(0.05).play()
+eventMetVoix = Metro(0.005).play()
+eventMetSnd = Metro(0.005).play()
 
 
 class TxtFile:

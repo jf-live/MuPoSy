@@ -154,6 +154,7 @@ class GranuleSf(Sig):
 
     def chooseNew(self):
         print "chooseNEW"
+        self.gr.stop()
         self.gr3.mix = random.random()
 
         # changes the reverb fb once in a while
@@ -176,7 +177,7 @@ class GranuleSf(Sig):
             else:
                 vari.sampColl = []
                 selSndIndex = random.randint(0,len(allSndsTables)-1)
-            self.gr.setTable(allSndsTables[selSndIndex])   ### CREATES THE BIG NOISE OF INFINITE DEATH (sometimes) !!!!! NOT ANYMORE :D  ;  OR DOES IT ?!!????
+            self.gr.setTable(allSndsTables[selSndIndex])   ### CREATES THE BIG NOISE OF INFINITE DEATH (sometimes) !!!!! NOT ANYMORE :D
             vari.sampColl.append(selSndIndex)  # To keep track of played samples
         elif coinSamp > 0.2 and coinSamp <= 0.4:
             print len(vari.sampColl)
@@ -202,6 +203,7 @@ class GranuleSf(Sig):
         self.gr4.setTimeFb()
         self.patChooseNew.time = self.dur + random.uniform(2,4)
         self.setEnv()
+        self.gr.play()
         self.noteEnv.play(delay=0.1)  # delay applied to prevent the BIG NOISE OF INFINITE DEATH
 
 

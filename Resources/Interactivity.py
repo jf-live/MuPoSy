@@ -18,6 +18,7 @@
 from pyo import *
 import variables as vari
 import utilities as util
+import constants as cons
 
 
 # to get CC value
@@ -27,8 +28,10 @@ class MidiCCIn():
         which should be either "Snd" or "Voice"
         """
         self.which = which
-        self.ctl = Midictl(ctlnumber=0, minscale=0, maxscale=127)
-        self.p = Port(self.ctl, .02)
+        if cons.PLAYMODE == "Manual":
+            self.ctl = Midictl(ctlnumber=0, minscale=0, maxscale=127)
+        elif cons.PLAYMODE == "Demo":
+            self.ctl = Sine(0.005,0.75).range(0,127)
 
     def retVal(self):
         updateVal = self.ctl.get()

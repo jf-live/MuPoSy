@@ -136,7 +136,9 @@ class AlgoGen(Sig):
         self.patUpdateTempo = Pattern(self.keepTime,0.01).play()
 
         self.synthNum = random.randint(1,5)  # how many synthGen instances will compose a note
-        self.a = [synt.SynthGen(inst=self.inst,side=side,mul=self.trigEnv*vari.synthGenMul) for i in range(13)]#range(self.synthNum)]
+        # self.a = [synt.SynthGen(inst=self.inst,side=side,mul=self.trigEnv*vari.synthGenMul) for i in range(1)]#self.synthNum)]
+        self.a = [synt.SynthGen(inst=self.inst,side=side,mul=self.trigEnv*vari.synthGenMul) for i in range(self.synthNum)]
+
         self.forOut = sum(self.a)
         Sig.__init__(self,self.forOut,[mul,mul],add)
 

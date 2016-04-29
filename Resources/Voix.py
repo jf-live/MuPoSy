@@ -72,7 +72,6 @@ class TxtSelect:
                     # Except for Miron, because the same ! line is always selected
                     miron = os.path.join(cons.RESOURCE_PATH, 'GastonMiron.txt')
                     if self.selPoem == miron:
-                        print 'miron!'
                         while vers.startswith(' ') or vers.startswith(' ') \
                                                    or self.hasNumbers(vers)==True \
                                                    or vers[0].isupper()==True \
@@ -111,7 +110,6 @@ class TxtSelect:
 
     def pickALine(self, listOfTxts):
         self.selPoem = random.choice(listOfTxts)
-        print self.selPoem
         with open(self.selPoem) as txtIn:
             poemTxt = (line.rstrip() for line in txtIn)
             poemTxt = (line.replace('ô', 'oh') for line in poemTxt)
@@ -130,30 +128,35 @@ class TxtSelect:
 
 class Tts:
     def __init__(self, inTxt):#, outPath):
-        # Here is the terminal command line to use.  say is the TTS app, a string 
-        # to be read, -o is the audio file to save the spoken text to.
-        # Outputs aiff file, 48kHz 24bit
-        self.inTxt = inTxt
-        self.outName = int(time.time()*1000)
 
-        ### Text-to-speech on OSX
-        if sys.platform.startswith("darwin"):
-            self.outFullName = str(self.outName) + ".aiff"
-            self.outFullName = os.path.join(cons.TEMP_PATH, self.outFullName)
-            self.outSettings = " --data-format=BEI24@48000 -r 120 -f"
-            command = "say -o " + self.outFullName + self.outSettings + self.inTxt
-        ### Text-to-speech on linux
-        elif sys.platform.startswith("linux"):
-            self.outFullName = str(self.outName) + ".wav"
-            self.outSettings = " "
-            command = "espeak -w " + self.outFullName + self.outSettings
-            command = command + '-f "%s"' % self.inTxt
+        # test to prevent repeated triggering
+        print vari.isVoicePlaying
+        if vari.isVoicePlaying == 0:
+            # Here is the terminal command line to use.  say is the TTS app, a string 
+            # to be read, -o is the audio file to save the spoken text to.
+            # Outputs aiff file, 48kHz 24bit
+            self.inTxt = inTxt
+            self.outName = int(time.time()*1000)
 
-        print 'command', command
+            ### Text-to-speech on OSX
+            if sys.platform.startswith("darwin"):
+                self.outFullName = str(self.outName) + ".aiff"
+                self.outFullName = os.path.join(cons.TEMP_PATH, self.outFullName)
+                self.outSettings = " --data-format=BEI24@48000 -r 120 -f"
+                command = "say -o " + self.outFullName + self.outSettings + self.inTxt
+            ### Text-to-speech on linux
+            elif sys.platform.startswith("linux"):
+                self.outFullName = str(self.outName) + ".wav"
+                self.outSettings = " "
+                command = "espeak -w " + self.outFullName + self.outSettings
+                command = command + '-f "%s"' % self.inTxt
 
-        # Here the command line is processed in a separate thread, not blocking 
-        # the rest of the code.  shell=True needs to be included.
-        self.process=subprocess.Popen(command, shell=True)
+            print 'command', command
+
+            # Here the command line is processed in a separate thread, not blocking 
+            # the rest of the code.  shell=True needs to be included.
+            self.process=subprocess.Popen(command, shell=True)
+            vari.isVoicePlaying = 1
 
     def getPath(self):
         somePath = os.path.dirname(os.path.realpath(self.outFullName))
@@ -166,6 +169,7 @@ class Tts:
     def clean(self):
         os.remove(self.inTxt)
         os.remove(self.outFullName)
+        vari.isVoicePlaying = 0
         print 'clean'
 
 

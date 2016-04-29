@@ -9,7 +9,7 @@ from pyo import *
 import random
 
 ### Tempo
-mainTempoInit = random.uniform(0.2,2) # mainTempoInit keeps the slowest possible time for a note
+mainTempoInit = random.uniform(0.2,0.5) # mainTempoInit keeps the slowest possible time for a note
 mainTempo = mainTempoInit #mainTempo is the current tempo, affected by MIDI CC in Engine.py
 sineTempo = 1 #sineTempo is also affected by MIDI CC; is used by sines with Voice
 fxChangeTime = 15 # time for pattern to change the FXs
@@ -52,12 +52,14 @@ LenDef().notesCollLen(4,20)
 ### For samples
 sampColl = [] # storing the played samples
 
-
+### To change notes and melody in manual mode
+isVoicePlaying = 0
+isVoicePlaying2 = 0
 
 ### To store the path to the Tts poem
 poemPath = None
 
-### For darwinian evolution of gens
+### For darwinian evolution of gens - not currently in use
 
 genStore = {"osc": [],
             "value": [],
