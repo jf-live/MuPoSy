@@ -43,8 +43,8 @@ très lentement (comme si c'est une grande salle qu'il faut traverser...)._
 Les appels sont faits comme suit:  
   
 MuPoSy.py -> Engine.py -> Algo.py -> SynthGen.py -> Effects.py  
-       |                                              |------> SamplePlay.py
-       
+       |                                              |------> SamplePlay.py  
+       |  
        |-->Voix.py  
        |-->Interactivity.py  
        |-->utilities.py  
